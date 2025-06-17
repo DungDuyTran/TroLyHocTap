@@ -1,37 +1,46 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ScheduleForm from "../ScheduleForm";
-import ScheduleView from "../SchedulePage";
+import ScheduleForm from "../../components/ScheduleForm";
 
-export default function RegisterSchedulePage() {
-  const [events, setEvents] = useState<
-    { title: string; start: string; end: string }[]
-  >([]);
+interface EventItem {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+}
 
-  // Lấy dữ liệu từ localStorage khi vừa mở trang
+export default function RegisterPage() {
+  const [events, setEvents] = useState<EventItem[]>([]);
+
   useEffect(() => {
-    const storedEvents = localStorage.getItem("events");
-    if (storedEvents) {
-      setEvents(JSON.parse(storedEvents));
-    }
+    const stored = localStorage.getItem("events");
+    if (stored) setEvents(JSON.parse(stored));
   }, []);
 
-  // Hàm xử lý khi thêm lịch mới
-  const handleAddEvent = (newEvent: {
+  const handleAddEvent = (event: {
     title: string;
     start: string;
     end: string;
   }) => {
-    const updatedEvents = [...events, newEvent];
-    setEvents(updatedEvents);
-    localStorage.setItem("events", JSON.stringify(updatedEvents)); // Lưu vào localStorage
+    const newEvent: EventItem = {
+      id: crypto.randomUUID(),
+      ...event,
+    };
+    const updated = [...events, newEvent];
+    setEvents(updated);
+    localStorage.setItem("events", JSON.stringify(updated));
+    alert("📝 Thêm lịch thành công!");
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-black min-h-screen text-white">
-      <ScheduleForm onAdd={handleAddEvent} />
-      <ScheduleView events={events} />
+    <div className="min-h-screen bg-black text-white flex justify-center ">
+      <div className="w-full max-w-md p-1 bg-black rounded shadow-lg ">
+        <h1 className="text-4xl font-bold mb-4 text-center mt-12">
+          📝 Đăng ký lịch học
+        </h1>
+        <ScheduleForm onAdd={handleAddEvent} />
+      </div>
     </div>
   );
 }
