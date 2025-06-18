@@ -50,7 +50,7 @@ export const menuItems: SidebarMenuItem[] = [
       {
         title: "Xem tiến độ",
         icon: TrendingUp,
-        href: "/dashboard/tiendo/xem",
+        href: "/app/monhoc/danhsach",
       },
       {
         title: "Bảng điểm",
@@ -94,12 +94,12 @@ export const menuItems: SidebarMenuItem[] = [
       {
         title: "Danh sách môn",
         icon: ListOrdered,
-        href: "/dashboard/monhoc/danhsach",
+        href: "/monhoc/danhsach",
       },
       {
         title: "Tài liệu học",
         icon: FileSearch,
-        href: "/dashboard/monhoc/tailieu",
+        href: "/monhoc/tailieu",
       },
     ],
   },

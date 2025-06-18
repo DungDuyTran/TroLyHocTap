@@ -7,7 +7,7 @@ const SidebarHeader = () => {
       <a href="#" className="flex items-center">
         <GraduationCap className="w-7 h-7 mr-[10px] text-green-600 " />
 
-        <span className="text-2xl ">STUDY</span>
+        <span className="text-3xl ">STUDY</span>
       </a>
     </div>
   );
