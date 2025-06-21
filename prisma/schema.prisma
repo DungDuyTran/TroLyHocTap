@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+model User {
+  id        Int              @id @default(autoincrement())
+  hoTen     String           @db.VarChar(45)
+  email     String           @db.VarChar(45)
+  soDienThoai String         @db.VarChar(255)
+  vaiTro    String           @db.VarChar(45)
+  ngaySinh  DateTime
+
+  tienDoHocTap   TienDoHocTap[]
+  thongKeHocTap  ThongKeHocTap[]
+  nhacNhoHocTap  NhacNhoHocTap[]
+  ghiChu         GhiChu[]
+  bangDiem       BangDiem[]
+  user_MonHoc     User_MonHoc[]
+  user_KyThi      User_KyThi[]
+  user_LichHoc    User_LichHoc[]
+}
+
+model TienDoHocTap {
+  id      Int    @id @default(autoincrement())
+  trangThai String   @db.VarChar(45)
+  ghiChu    String?  @db.VarChar(245)
+  tienDoPhanTram  Int       @default(0)
+  ngayBatDau      DateTime
+  ngayKetThuc     DateTime?
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+model ThongKeHocTap {
+  id      Int    @id @default(autoincrement())
+  ngay    DateTime
+  soGioHoc Float
+  ghiChu  String? @db.VarChar(45)
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+model NhacNhoHocTap {
+  id      Int    @id @default(autoincrement())
+  tieuDe  String @db.VarChar(45)
+  noiDung String @db.VarChar(45)
+  thoiGianNhac DateTime
+  trangThai Boolean
+
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+}
+
+model GhiChu {
+  id       Int    @id @default(autoincrement())
+  noiDung  String @db.VarChar(255)
+  ngayTao  DateTime
+
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+}
+
+model BangDiem {
+  id            Int    @id @default(autoincrement())
+  diemGiuaKy    String @db.VarChar(45)
+  diemThuongKy  String @db.VarChar(45)
+  diemTrungBinh String @db.VarChar(45)
+
+  user          User   @relation(fields: [userId], references: [id])
+  userId        Int
+  monHoc        MonHoc @relation(fields: [monHocId], references: [id])
+  monHocId      Int
+}
+
+model MonHoc {
+  id        Int    @id @default(autoincrement())
+  tenMon    String @db.VarChar(45)
+  giangVien String @db.VarChar(45)
+  moTa      String @db.VarChar(450)
+
+  taiLieu        TaiLieu[]
+  userMonHoc     User_MonHoc[]
+  bangDiem       BangDiem[]
+  lichHocMonHoc  LichHoc_MonHoc[]
+  kyThiMonHoc    KyThi_MonHoc[]
+}
+
+model TaiLieu {
+  id        Int    @id @default(autoincrement())
+  tenFile   String @db.VarChar(45)
+  huongDan  String @db.VarChar(255)
+  ghiChu    String @db.VarChar(155)
+  ngayTao   DateTime
+
+  monHoc    MonHoc @relation(fields: [monHocId], references: [id])
+  monHocId  Int
+}
+
+model User_MonHoc {
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+  monHoc  MonHoc @relation(fields: [monHocId], references: [id])
+  monHocId Int
+
+  @@id([userId, monHocId])
+}
+
+model KyThi {
+  id          Int    @id @default(autoincrement())
+  tenKyThi    String @db.VarChar(45)
+  ghiChu      String? @db.VarChar(155)
+  thoiGianThi DateTime
+
+  lichSuThi    LichSuThi[]
+  kyThiMonHoc  KyThi_MonHoc[]
+  userKyThi    User_KyThi[]
+}
+
+model LichSuThi {
+  id      Int    @id @default(autoincrement())
+  diem    Float
+  ghiChu  String? @db.VarChar(45)
+
+  kyThi   KyThi  @relation(fields: [kyThiId], references: [id])
+  kyThiId Int
+}
+
+model User_KyThi {
+  user    User   @relation(fields: [userId], references: [id])
+  userId  Int
+  kyThi   KyThi  @relation(fields: [kyThiId], references: [id])
+  kyThiId Int
+
+  @@id([userId, kyThiId])
+}
+
+model LichHoc {
+  id       Int    @id @default(autoincrement())
+  tieuDe   String @db.VarChar(45)
+  batDau   DateTime
+  ketThuc  DateTime
+
+
+  userLichHoc    User_LichHoc[]
+  lichHocMonHoc  LichHoc_MonHoc[]
+}
+
+model User_LichHoc {
+  user     User    @relation(fields: [userId], references: [id])
+  userId   Int
+  lichHoc  LichHoc @relation(fields: [lichHocId], references: [id])
+  lichHocId Int
+
+  @@id([userId, lichHocId])
+}
+
+model LichHoc_MonHoc {
+  lichHoc   LichHoc @relation(fields: [lichHocId], references: [id])
+  lichHocId Int
+  monHoc    MonHoc  @relation(fields: [monHocId], references: [id])
+  monHocId  Int
+
+  @@id([lichHocId, monHocId])
+}
+
+model KyThi_MonHoc {
+  kyThi     KyThi   @relation(fields: [kyThiId], references: [id])
+  kyThiId   Int
+  monHoc    MonHoc  @relation(fields: [monHocId], references: [id])
+  monHocId  Int
+
+  @@id([kyThiId, monHocId])
+}
