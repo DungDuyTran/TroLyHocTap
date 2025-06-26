@@ -2,43 +2,28 @@
 
 import React, { useState, useEffect } from "react";
 
-interface MonHoc {
+// Interfaces
+interface GhiChu {
   id: number;
-  tenMon: string;
-  giangVien: string;
-  moTa: string;
-}
-
-interface TaiLieu {
-  id: number;
-  tenFile: string;
-  huongDan: string;
-  ghiChu: string;
   noiDung: string;
-  fileUrl: string;
   ngayTao: string;
-  monHocId: number;
-  monHoc?: MonHoc; // This is populated by frontend after fetching MonHoc list
+  userId: number;
+  isQuanTrong?: boolean; // Added isQuanTrong field
 }
 
-interface TaiLieuFormData {
-  tenFile: string;
-  huongDan: string;
-  ghiChu: string;
+interface GhiChuFormData {
   noiDung: string;
-  fileUrl: string;
-  monHocId: number;
+  ngayTao: string;
+  userId: number;
+  isQuanTrong?: boolean; // Added isQuanTrong field
 }
 
-export default function TaiLieuPage() {
-  const [danhSachTaiLieu, setDanhSachTaiLieu] = useState<TaiLieu[]>([]);
-  const [danhSachMonHoc, setDanhSachMonHoc] = useState<MonHoc[]>([]);
-  const [selectedMonHocFilter, setSelectedMonHocFilter] = useState<
-    number | "all"
-  >("all");
+// Main Component
+export default function GhiChuPage() {
+  const [danhSachGhiChu, setDanhSachGhiChu] = useState<GhiChu[]>([]);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
-  const [selectedTaiLieu, setSelectedTaiLieu] = useState<TaiLieu | null>(null);
+  const [selectedGhiChu, setSelectedGhiChu] = useState<GhiChu | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(
     null
@@ -46,87 +31,38 @@ export default function TaiLieuPage() {
   const [isSuccessNotification, setIsSuccessNotification] =
     useState<boolean>(true);
   const [showViewerModal, setShowViewerModal] = useState<boolean>(false);
-  const [selectedTaiLieuForView, setSelectedTaiLieuForView] =
-    useState<TaiLieu | null>(null);
+  const [selectedGhiChuForView, setSelectedGhiChuForView] =
+    useState<GhiChu | null>(null);
+  const [showImportantOnly, setShowImportantOnly] = useState<boolean>(false); // State for filtering important notes
 
-  // Updated API URL to directly interact with TaiLieu endpoint
-  const API_URL = "http://localhost:3000/api/taiLieu";
-  const MONHOC_API_URL = "http://localhost:3000/api/monHoc";
+  const API_URL = "http://localhost:3000/api/ghiChu";
 
-  // Effect to read monHocId from URL on initial load
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const monHocIdParam = params.get("id");
-    if (monHocIdParam) {
-      setSelectedMonHocFilter(parseInt(monHocIdParam));
-    }
-  }, []);
-
-  // Fetch list of MonHoc for the filter dropdown
-  const fetchMonHocForFilter = async () => {
-    try {
-      const response = await fetch(MONHOC_API_URL);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data: MonHoc[] = await response.json();
-      setDanhSachMonHoc(data);
-    } catch (error: any) {
-      console.error("Lỗi khi tải danh sách môn học để lọc:", error);
-      showNotification(
-        `Lỗi khi tải danh sách môn học: ${error.message}`,
-        false
-      );
-    }
-  };
-
-  // Fetch list of TaiLieu based on selected filter
-  const fetchTaiLieu = async () => {
+  // Function to fetch notes
+  const fetchGhiChu = async () => {
     try {
       let apiUrl = API_URL;
-      if (selectedMonHocFilter !== "all") {
-        apiUrl += `?monHocId=${selectedMonHocFilter}`;
+      if (showImportantOnly) {
+        apiUrl += `?isQuanTrong=true`; // Add filter parameter if showing important notes only
       }
       const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // Assuming API now returns TaiLieu objects directly, and might include monHoc
       const result = await response.json();
-      const data: TaiLieu[] = (result.data || []).map((item: any) => ({
-        id: item.id,
-        tenFile: item.tenFile || "Không có thông tin",
-        huongDan: item.huongDan || "Không có thông tin",
-        ghiChu: item.ghiChu || "Không có thông tin",
-        noiDung: item.noiDung || "Không có nội dung tài liệu được cung cấp.",
-        fileUrl: item.fileUrl || "",
-        ngayTao: item.ngayTao || new Date().toISOString(),
-        monHocId: item.monHocId,
-        // Populate monHoc by finding it from the fetched danhSachMonHoc
-        monHoc: danhSachMonHoc.find((mh) => mh.id === item.monHocId),
-      }));
-      setDanhSachTaiLieu(data);
+      setDanhSachGhiChu(result.data || []);
     } catch (error: any) {
-      console.error("Lỗi khi tải danh sách tài liệu:", error);
+      console.error("Lỗi khi tải danh sách ghi chú:", error);
       showNotification(
-        `Lỗi khi tải danh sách tài liệu: ${error.message}`,
+        `Lỗi khi tải danh sách ghi chú: ${error.message}`,
         false
       );
     }
   };
 
-  // Fetch MonHoc on component mount
+  // Fetch notes on component mount and when filter changes
   useEffect(() => {
-    fetchMonHocForFilter();
-  }, []);
-
-  // Fetch TaiLieu when filter changes or MonHoc list is loaded
-  // Added a check for danhSachMonHoc.length to ensure monHoc data is available for mapping
-  useEffect(() => {
-    if (danhSachMonHoc.length > 0 || selectedMonHocFilter === "all") {
-      fetchTaiLieu();
-    }
-  }, [selectedMonHocFilter, danhSachMonHoc]); // Re-fetch when filter or MonHoc list changes
+    fetchGhiChu();
+  }, [showImportantOnly]);
 
   // Show notification popup
   const showNotification = (message: string, isSuccess: boolean) => {
@@ -137,13 +73,13 @@ export default function TaiLieuPage() {
     }, 3000);
   };
 
-  // Handle adding a new document
-  const handleAddTaiLieu = async (newTaiLieuData: TaiLieuFormData) => {
+  // Handle adding a new note
+  const handleAddGhiChu = async (newGhiChuData: GhiChuFormData) => {
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTaiLieuData),
+        body: JSON.stringify(newGhiChuData),
       });
       if (!response.ok) {
         const errorData = await response
@@ -155,22 +91,22 @@ export default function TaiLieuPage() {
           )}`
         );
       }
-      await fetchTaiLieu();
+      await fetchGhiChu();
       setShowAddModal(false);
-      showNotification("Thêm tài liệu thành công!", true);
+      showNotification("Thêm ghi chú thành công!", true);
     } catch (error: any) {
-      console.error("Lỗi khi thêm tài liệu:", error);
-      showNotification(`Thêm tài liệu thất bại: ${error.message}`, false);
+      console.error("Lỗi khi thêm ghi chú:", error);
+      showNotification(`Thêm ghi chú thất bại: ${error.message}`, false);
     }
   };
 
-  // Handle updating an existing document
-  const handleUpdateTaiLieu = async (updatedTaiLieuData: TaiLieu) => {
+  // Handle updating an existing note
+  const handleUpdateGhiChu = async (updatedGhiChuData: GhiChu) => {
     try {
-      const response = await fetch(`${API_URL}/${updatedTaiLieuData.id}`, {
+      const response = await fetch(`${API_URL}/${updatedGhiChuData.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedTaiLieuData),
+        body: JSON.stringify(updatedGhiChuData),
       });
       if (!response.ok) {
         const errorData = await response
@@ -182,18 +118,18 @@ export default function TaiLieuPage() {
           )}`
         );
       }
-      await fetchTaiLieu();
+      await fetchGhiChu();
       setShowEditModal(false);
-      setSelectedTaiLieu(null);
-      showNotification("Cập nhật tài liệu thành công!", true);
+      setSelectedGhiChu(null);
+      showNotification("Cập nhật ghi chú thành công!", true);
     } catch (error: any) {
-      console.error("Lỗi khi cập nhật tài liệu:", error);
-      showNotification(`Cập nhật tài liệu thất bại: ${error.message}`, false);
+      console.error("Lỗi khi cập nhật ghi chú:", error);
+      showNotification(`Cập nhật ghi chú thất bại: ${error.message}`, false);
     }
   };
 
-  // Handle deleting a document
-  const handleDeleteTaiLieu = async (id: number) => {
+  // Handle deleting a note
+  const handleDeleteGhiChu = async (id: number) => {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
@@ -208,26 +144,64 @@ export default function TaiLieuPage() {
           )}`
         );
       }
-      await fetchTaiLieu();
-      setSelectedTaiLieu(null);
+      await fetchGhiChu();
+      setSelectedGhiChu(null);
       setIsDeleting(false);
-      showNotification("Xóa tài liệu thành công!", true);
+      showNotification("Xóa ghi chú thành công!", true);
     } catch (error: any) {
-      console.error("Lỗi khi xóa tài liệu:", error);
-      showNotification(`Xóa tài liệu thất bại: ${error.message}`, false);
+      console.error("Lỗi khi xóa ghi chú:", error);
+      showNotification(`Xóa ghi chú thất bại: ${error.message}`, false);
+    }
+  };
+
+  // Toggle importance status of a note
+  const handleToggleQuanTrong = async (ghiChu: GhiChu) => {
+    try {
+      const updatedStatus = !ghiChu.isQuanTrong;
+      const response = await fetch(`${API_URL}/${ghiChu.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isQuanTrong: updatedStatus }),
+      });
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Không thể đọc phản hồi lỗi." }));
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${JSON.stringify(
+            errorData
+          )}`
+        );
+      }
+      // Optimistically update the local state for immediate feedback
+      setDanhSachGhiChu((prev) =>
+        prev.map((item) =>
+          item.id === ghiChu.id ? { ...item, isQuanTrong: updatedStatus } : item
+        )
+      );
+      showNotification(
+        `Đã ${updatedStatus ? "đánh dấu" : "bỏ đánh dấu"} quan trọng`,
+        true
+      );
+    } catch (error: any) {
+      console.error("Lỗi khi cập nhật trạng thái quan trọng:", error);
+      showNotification(
+        `Cập nhật trạng thái quan trọng thất bại: ${error.message}`,
+        false
+      );
     }
   };
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-gray-900 to-black text-white font-inter">
+    <div className="min-h-screen p-[30px] bg-gradient-to-br from-gray-900 to-black text-white font-inter">
       <h1 className="text-4xl font-extrabold mb-8 text-center text-green-400 drop-shadow-lg">
-        📖 Quản lý Tài liệu Học
+        📝 Quản lý Ghi Chú
       </h1>
 
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => setShowAddModal(true)}
-          className="px-6 py-3 bg-green-500 rounded-full shadow-lg hover:bg-green-600 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center"
+          className="px-6 py-3 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -243,80 +217,65 @@ export default function TaiLieuPage() {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Thêm tài liệu mới
+          Thêm ghi chú mới
         </button>
-
-        <div className="relative">
-          <label htmlFor="monHocFilter" className="sr-only">
-            Lọc theo môn học
-          </label>
-          <select
-            id="monHocFilter"
-            className="block w-full py-2 px-3 border border-gray-600 bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm text-white"
-            value={selectedMonHocFilter}
-            onChange={(e) =>
-              setSelectedMonHocFilter(
-                e.target.value === "all" ? "all" : parseInt(e.target.value)
-              )
-            }
-          >
-            <option value="all">Tất cả môn học</option>
-            {danhSachMonHoc.map((mon) => (
-              <option key={mon.id} value={mon.id}>
-                {mon.tenMon}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {danhSachTaiLieu.length > 0 ? (
-          danhSachTaiLieu.map((taiLieuItem) => {
-            const createdAt = new Date(taiLieuItem.ngayTao);
+        {danhSachGhiChu.length > 0 ? (
+          danhSachGhiChu.map((ghiChuItem) => {
+            const createdAt = new Date(ghiChuItem.ngayTao);
             const formattedDate = !isNaN(createdAt.getTime())
               ? createdAt.toLocaleDateString("vi-VN")
               : "Không có thông tin ngày tạo";
 
             return (
               <div
-                key={taiLieuItem.id}
-                className="bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-transparent hover:border-green-500 transition-all duration-200 flex flex-col"
+                key={ghiChuItem.id}
+                className="bg-gray-800 p-6 rounded-xl shadow-lg border-2 border-transparent hover:border-green-500 transition-all duration-200 flex flex-col relative"
               >
+                {/* Star icon for importance */}
+                <button
+                  onClick={() => handleToggleQuanTrong(ghiChuItem)}
+                  className="absolute top-3 right-3 p-1 rounded-full text-white z-10 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  aria-label={
+                    ghiChuItem.isQuanTrong
+                      ? "Bỏ đánh dấu quan trọng"
+                      : "Đánh dấu quan trọng"
+                  }
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-7 w-7 transition-colors duration-200 ${
+                      ghiChuItem.isQuanTrong
+                        ? "text-yellow-400"
+                        : "text-gray-400"
+                    }`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.929 8.72c-.783-.57-.381-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+                  </svg>
+                </button>
+
                 <div className="flex-grow">
-                  {" "}
-                  {/* This div ensures content pushes buttons to the bottom */}
                   <h2 className="text-xl font-bold mb-2 text-yellow-300">
-                    📚 {taiLieuItem.tenFile}
+                    Ghi chú #{ghiChuItem.id}
                   </h2>
                   <p className="text-gray-300 text-sm mb-1">
-                    � Hướng dẫn:{" "}
+                    ✍️ Nội dung:{" "}
                     <span className="font-medium line-clamp-2">
-                      {taiLieuItem.huongDan || "Không có thông tin"}
-                    </span>
-                  </p>
-                  <p className="text-gray-400 text-sm mb-1">
-                    📝 Ghi chú:{" "}
-                    <span className="line-clamp-2">
-                      {taiLieuItem.ghiChu || "Không có thông tin"}
+                      {ghiChuItem.noiDung}
                     </span>
                   </p>
                   <p className="text-gray-400 text-xs mb-3">
                     🗓️ Ngày tạo: {formattedDate}
                   </p>
-                  {taiLieuItem.monHoc && (
-                    <p className="text-gray-300 text-sm mb-3">
-                      📘 Môn học:{" "}
-                      <span className="font-medium">
-                        {taiLieuItem.monHoc.tenMon}
-                      </span>
-                    </p>
-                  )}
                 </div>
                 <div className="flex justify-end space-x-2 mt-4">
                   <button
                     onClick={() => {
-                      setSelectedTaiLieuForView(taiLieuItem);
+                      setSelectedGhiChuForView(ghiChuItem);
                       setShowViewerModal(true);
                     }}
                     className="px-4 py-2 bg-purple-600 rounded-md hover:bg-purple-700 text-white text-sm font-semibold flex items-center space-x-1"
@@ -344,10 +303,10 @@ export default function TaiLieuPage() {
                   </button>
                   <button
                     onClick={() => {
-                      setSelectedTaiLieu(taiLieuItem);
+                      setSelectedGhiChu(ghiChuItem);
                       setShowEditModal(true);
                     }}
-                    className="px-4 py-2 bg-blue-600 rounded-md hover:bg-blue-700 text-white text-sm font-semibold flex items-center space-x-1"
+                    className="px-4 py-2 bg-green-600 rounded-md hover:bg-green-700 text-white text-sm font-semibold flex items-center space-x-1"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -367,7 +326,7 @@ export default function TaiLieuPage() {
                   </button>
                   <button
                     onClick={() => {
-                      setSelectedTaiLieu(taiLieuItem);
+                      setSelectedGhiChu(ghiChuItem);
                       setIsDeleting(true);
                     }}
                     className="px-4 py-2 bg-red-600 rounded-md hover:bg-red-700 text-white text-sm font-semibold flex items-center space-x-1"
@@ -394,50 +353,48 @@ export default function TaiLieuPage() {
           })
         ) : (
           <p className="text-gray-400 text-center col-span-full">
-            Không có tài liệu nào được tìm thấy.
+            Không có ghi chú nào được tìm thấy.
           </p>
         )}
       </div>
 
       {showAddModal && (
-        <TaiLieuAddModal
-          title="Thêm Tài liệu Mới"
+        <GhiChuAddModal
+          title="Thêm Ghi Chú Mới"
           onClose={() => setShowAddModal(false)}
-          onSubmit={handleAddTaiLieu}
-          danhSachMonHoc={danhSachMonHoc}
+          onSubmit={handleAddGhiChu}
         />
       )}
 
-      {showEditModal && selectedTaiLieu && (
-        <TaiLieuEditModal
-          title="Sửa Thông Tin Tài liệu"
-          taiLieu={selectedTaiLieu}
+      {showEditModal && selectedGhiChu && (
+        <GhiChuEditModal
+          title="Sửa Ghi Chú"
+          ghiChu={selectedGhiChu}
           onClose={() => {
             setShowEditModal(false);
-            setSelectedTaiLieu(null);
+            setSelectedGhiChu(null);
           }}
-          onSubmit={handleUpdateTaiLieu}
-          danhSachMonHoc={danhSachMonHoc}
+          onSubmit={handleUpdateGhiChu}
         />
       )}
 
-      {isDeleting && selectedTaiLieu && (
+      {isDeleting && selectedGhiChu && (
         <ConfirmationModal
-          message={`Bạn có chắc chắn muốn xóa tài liệu "${selectedTaiLieu.tenFile}" không?`}
-          onConfirm={() => handleDeleteTaiLieu(selectedTaiLieu.id)}
+          message={`Bạn có chắc chắn muốn xóa ghi chú #${selectedGhiChu.id} không?`}
+          onConfirm={() => handleDeleteGhiChu(selectedGhiChu.id)}
           onCancel={() => {
             setIsDeleting(false);
-            setSelectedTaiLieu(null);
+            setSelectedGhiChu(null);
           }}
         />
       )}
 
-      {showViewerModal && selectedTaiLieuForView && (
-        <TaiLieuViewerModal
-          taiLieu={selectedTaiLieuForView}
+      {showViewerModal && selectedGhiChuForView && (
+        <GhiChuViewerModal
+          ghiChu={selectedGhiChuForView}
           onClose={() => {
             setShowViewerModal(false);
-            setSelectedTaiLieuForView(null);
+            setSelectedGhiChuForView(null);
           }}
         />
       )}
@@ -452,141 +409,54 @@ export default function TaiLieuPage() {
   );
 }
 
-interface TaiLieuAddModalProps {
+// Reusable Modal Components (for self-containment)
+
+interface GhiChuAddModalProps {
   title: string;
   onClose: () => void;
-  onSubmit: (data: TaiLieuFormData) => Promise<void> | void;
-  danhSachMonHoc: MonHoc[];
+  onSubmit: (data: GhiChuFormData) => Promise<void> | void;
 }
 
-function TaiLieuAddModal({
-  title,
-  onClose,
-  onSubmit,
-  danhSachMonHoc,
-}: TaiLieuAddModalProps) {
-  const [tenFile, setTenFile] = useState<string>("");
+function GhiChuAddModal({ title, onClose, onSubmit }: GhiChuAddModalProps) {
   const [noiDung, setNoiDung] = useState<string>("");
-  const [monHocId, setMonHocId] = useState<number | "">("");
-  const [huongDan, setHuongDan] = useState<string>("");
-  const [ghiChu, setGhiChu] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (monHocId === "") {
-      // Using console.error instead of alert based on instructions
-      console.error("Vui lòng chọn môn học!");
-      return;
-    }
     onSubmit({
-      tenFile,
-      huongDan,
-      ghiChu,
       noiDung,
-      fileUrl: "",
-      monHocId: monHocId as number,
-    });
+      ngayTao: new Date().toISOString(),
+      userId: 1,
+      isQuanTrong: false,
+    }); // Default new note to not important
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-md border border-green-500 mt-[20px]">
+      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-md border border-green-600 mt-[20px]">
         <h2 className="text-3xl font-bold mb-6 text-center text-green-400">
           {title}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
-              htmlFor="tenFile"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Tên File
-            </label>
-            <input
-              type="text"
-              id="tenFile"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={tenFile}
-              onChange={(e) => setTenFile(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
               htmlFor="noiDung"
               className="block text-gray-300 text-sm font-bold mb-2"
             >
-              Nội dung tài liệu (văn bản)
+              Nội dung ghi chú
             </label>
             <textarea
               id="noiDung"
               rows={6}
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
               value={noiDung}
               onChange={(e) => setNoiDung(e.target.value)}
               required
             ></textarea>
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="huongDan"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Hướng dẫn
-            </label>
-            <input
-              type="text"
-              id="huongDan"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={huongDan}
-              onChange={(e) => setHuongDan(e.target.value)}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="ghiChu"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Ghi chú
-            </label>
-            <input
-              type="text"
-              id="ghiChu"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={ghiChu}
-              onChange={(e) => setGhiChu(e.target.value)}
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="monHocId"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Môn Học
-            </label>
-            <select
-              id="monHocId"
-              className="block w-full py-2 px-3 border border-gray-600 bg-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 sm:text-sm text-white"
-              value={monHocId}
-              onChange={(e) =>
-                setMonHocId(
-                  e.target.value === "" ? "" : parseInt(e.target.value)
-                )
-              }
-              required
-            >
-              <option value="">-- Chọn môn học --</option>
-              {danhSachMonHoc.map((mon) => (
-                <option key={mon.id} value={mon.id}>
-                  {mon.tenMon}
-                </option>
-              ))}
-            </select>
-          </div>
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -632,144 +502,65 @@ function TaiLieuAddModal({
   );
 }
 
-interface TaiLieuEditModalProps {
+interface GhiChuEditModalProps {
   title: string;
-  taiLieu: TaiLieu;
+  ghiChu: GhiChu;
   onClose: () => void;
-  onSubmit: (data: TaiLieu) => Promise<void> | void;
-  danhSachMonHoc: MonHoc[];
+  onSubmit: (data: GhiChu) => Promise<void> | void;
 }
 
-function TaiLieuEditModal({
+function GhiChuEditModal({
   title,
-  taiLieu,
+  ghiChu,
   onClose,
   onSubmit,
-  danhSachMonHoc,
-}: TaiLieuEditModalProps) {
-  const [editedTaiLieu, setEditedTaiLieu] = useState<TaiLieu>(taiLieu);
+}: GhiChuEditModalProps) {
+  const [editedGhiChu, setEditedGhiChu] = useState<GhiChu>(ghiChu);
 
   useEffect(() => {
-    setEditedTaiLieu(taiLieu);
-  }, [taiLieu]);
+    setEditedGhiChu(ghiChu);
+  }, [ghiChu]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { id, value } = e.target;
-    setEditedTaiLieu((prevData) => ({
+    setEditedGhiChu((prevData) => ({
       ...prevData,
-      [id]: id === "monHocId" ? parseInt(value) : value,
+      [id]: value,
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(editedTaiLieu);
+    onSubmit(editedGhiChu);
   };
-
-  if (!editedTaiLieu) {
-    console.error("TaiLieuEditModal: taiLieu prop is null or undefined.");
-    return null;
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-md border border-green-500 mt-[20px]">
+      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-md border border-green-600 mt-[20px]">
         <h2 className="text-3xl font-bold mb-6 text-center text-green-400">
           {title}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
-              htmlFor="tenFile"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Tên File
-            </label>
-            <input
-              type="text"
-              id="tenFile"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={editedTaiLieu.tenFile}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
               htmlFor="noiDung"
               className="block text-gray-300 text-sm font-bold mb-2"
             >
-              Nội dung tài liệu (văn bản)
+              Nội dung ghi chú
             </label>
             <textarea
               id="noiDung"
               rows={6}
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
-              value={editedTaiLieu.noiDung}
+              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
+              value={editedGhiChu.noiDung}
               onChange={handleInputChange}
               required
             ></textarea>
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="huongDan"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Hướng dẫn
-            </label>
-            <input
-              type="text"
-              id="huongDan"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={editedTaiLieu.huongDan}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="ghiChu"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Ghi chú
-            </label>
-            <input
-              type="text"
-              id="ghiChu"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={editedTaiLieu.ghiChu}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="monHocId"
-              className="block text-gray-300 text-sm font-bold mb-2"
-            >
-              Môn Học
-            </label>
-            <select
-              id="monHocId"
-              className="block w-full py-2 px-3 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 sm:text-sm text-white"
-              value={editedTaiLieu.monHocId}
-              onChange={handleInputChange}
-              required
-            >
-              <option value="">-- Chọn môn học --</option>
-              {danhSachMonHoc.map((mon) => (
-                <option key={mon.id} value={mon.id}>
-                  {mon.tenMon}
-                </option>
-              ))}
-            </select>
-          </div>
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -880,19 +671,19 @@ function ConfirmationModal({
   );
 }
 
-interface TaiLieuViewerModalProps {
-  taiLieu: TaiLieu;
+interface GhiChuViewerModalProps {
+  ghiChu: GhiChu;
   onClose: () => void;
 }
 
-function TaiLieuViewerModal({ taiLieu, onClose }: TaiLieuViewerModalProps) {
-  if (!taiLieu) {
+function GhiChuViewerModal({ ghiChu, onClose }: GhiChuViewerModalProps) {
+  if (!ghiChu) {
     return null;
   }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-xl border border-yellow-500">
+      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-2xl border border-yellow-500">
         <h2 className="text-3xl font-bold mb-6 text-center text-yellow-400 flex items-center justify-center space-x-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -908,15 +699,15 @@ function TaiLieuViewerModal({ taiLieu, onClose }: TaiLieuViewerModalProps) {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <span>Xem Tài liệu: {taiLieu.tenFile}</span>
+          <span>Xem Ghi Chú: #{ghiChu.id}</span>
         </h2>
         <div className="space-y-4 text-white text-base">
           <div className="bg-gray-700 p-3 rounded-md h-96 overflow-y-auto">
             <span className="font-semibold text-gray-300">
-              Nội dung tài liệu (văn bản):
+              Nội dung ghi chú:
             </span>
             <p className="text-gray-200 mt-2 whitespace-pre-wrap">
-              {taiLieu.noiDung || "Không có nội dung tài liệu được cung cấp."}
+              {ghiChu.noiDung || "Không có nội dung ghi chú được cung cấp."}
             </p>
           </div>
         </div>

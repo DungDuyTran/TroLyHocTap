@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-// Schema validate đầu vào
+// Schema cho một người dùng
 const UserSchema = z.object({
   hoTen: z.string().min(3),
   email: z.string().email(),
@@ -11,6 +11,9 @@ const UserSchema = z.object({
   vaiTro: z.string().min(2),
   ngaySinh: z.coerce.date(),
 });
+
+// Schema cho mảng người dùng
+const UsersSchema = z.array(UserSchema);
 
 // GET: Lọc danh sách người dùng
 export async function GET(req: NextRequest) {
@@ -57,11 +60,11 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST: Tạo mới người dùng
+// POST: Nhập nguyên mảng người dùng
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const validated = UserSchema.safeParse(body);
+    const validated = UsersSchema.safeParse(body);
 
     if (!validated.success) {
       return NextResponse.json(
@@ -70,17 +73,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newUser = await prisma.user.create({
+    const created = await prisma.user.createMany({
       data: validated.data,
+      skipDuplicates: true,
     });
 
-    return NextResponse.json({ newUser }, { status: 200 });
+    return NextResponse.json(
+      { message: "Đã thêm người dùng", created },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 400 });
   }
 }
 
-// PUT: Cập nhật nhiều người dùng (có thể sửa lại nếu muốn cập nhật theo ID)
+// PUT: Cập nhật toàn bộ người dùng (có thể tuỳ chỉnh theo id)
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
@@ -106,12 +113,12 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE: Xóa tất cả người dùng (cẩn thận khi dùng)
+// DELETE: Xoá toàn bộ người dùng
 export async function DELETE(req: NextRequest) {
   try {
     await prisma.user.deleteMany();
     return NextResponse.json(
-      { message: "Đã xóa toàn bộ người dùng." },
+      { message: "Đã xoá toàn bộ người dùng." },
       { status: 200 }
     );
   } catch (error) {

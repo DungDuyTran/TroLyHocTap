@@ -70,6 +70,7 @@ model GhiChu {
   id       Int    @id @default(autoincrement())
   noiDung  String @db.VarChar(255)
   ngayTao  DateTime
+  isQuanTrong Boolean?  @default(false)
 
   user     User   @relation(fields: [userId], references: [id])
   userId   Int
@@ -96,29 +97,30 @@ model MonHoc {
   bangDiem       BangDiem[]
   lichHocMonHoc  LichHoc_MonHoc[]
   kyThiMonHoc    KyThi_MonHoc[]
-  monHocTaiLieu  MonHoc_TaiLieu[]
+  TaiLieu        TaiLieu[]
 }
-
 model TaiLieu {
-  id             Int               @id @default(autoincrement())
-  tenFile        String            @db.VarChar(45)
-  huongDan       String            @db.VarChar(255)
-  ghiChu String? @db.VarChar(155) 
-  ngayTao        DateTime
-  monHocTaiLieu  MonHoc_TaiLieu[]
+  id        Int      @id @default(autoincrement())
+  tenFile   String   @db.VarChar(45)
+  huongDan  String   @db.VarChar(255)
+  ghiChu    String   @db.VarChar(155)
+  ngayTao   DateTime
+  noiDung   String @db.Text
+  monHocId  Int
+  monHoc    MonHoc   @relation(fields: [monHocId], references: [id])
 }
 
-model MonHoc_TaiLieu {
-  monHoc     MonHoc  @relation(fields: [monHocId], references: [id])
-  monHocId   Int
+// model MonHoc_TaiLieu {
+//   monHoc     MonHoc  @relation(fields: [monHocId], references: [id])
+//   monHocId   Int
 
-  taiLieu    TaiLieu @relation(fields: [taiLieuId], references: [id])
-  taiLieuId  Int
+//   taiLieu    TaiLieu @relation(fields: [taiLieuId], references: [id])
+//   taiLieuId  Int
 
-  noiDung    String  @db.Text
+//   noiDung    String  @db.Text
 
-  @@id([monHocId, taiLieuId])
-}
+//   @@id([monHocId, taiLieuId])
+// }
 
 
 model User_MonHoc {

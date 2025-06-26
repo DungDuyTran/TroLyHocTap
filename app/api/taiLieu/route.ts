@@ -1,74 +1,129 @@
-import { prisma } from "@/prisma/client";
+// Ví dụ: app/api/taiLieu/route.ts (hoặc pages/api/taiLieu.ts)
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-
-// Định nghĩa schema validate đầu vào
-const TaiLieuSchema = z.object({
-  tenFile: z.string().min(1),
-  huongDan: z.string().min(1),
-  ghiChu: z.string().optional(),
-  ngayTao: z.coerce.date(),
-});
+import { prisma } from "@/prisma/client"; // Đảm bảo đường dẫn đúng
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const limit = Number(searchParams.get("limit")) || 10;
-  const page = Number(searchParams.get("page")) || 1;
-  const tenFile = searchParams.get("tenFile");
+  const monHocIdParam = searchParams.get("monHocId");
+  const filters: any = {};
+
+  if (monHocIdParam) {
+    // Chuyển đổi ID từ chuỗi sang số nguyên và thêm vào bộ lọc
+    filters.monHocId = parseInt(monHocIdParam);
+  }
 
   try {
-    const whereClause = tenFile
-      ? {
-          tenFile: {
-            contains: tenFile,
-            mode: "insensitive",
-          },
-        }
-      : {};
-
-    const totalRecords = await prisma.taiLieu.count({ where: whereClause });
-    const totalPages = Math.ceil(totalRecords / limit);
-
     const data = await prisma.taiLieu.findMany({
-      where: whereClause,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { ngayTao: "desc" },
+      where: filters,
+      include: { monHoc: true }, // Bao gồm thông tin môn học nếu bạn muốn trả về
+      orderBy: { ngayTao: "desc" }, // Sắp xếp theo ngày tạo
+      // Có thể thêm skip và take cho phân trang nếu cần
     });
 
-    return NextResponse.json(
-      { data, extraInfo: { totalRecords, totalPages, page, limit } },
-      { status: 200 }
-    );
+    // Trả về dữ liệu trong một đối tượng có trường 'data'
+    return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
+    console.error("Lỗi khi tải tài liệu:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
 
+// Bạn cũng cần đảm bảo các hàm POST, PUT, DELETE khác cho TaiLieu model của bạn hoạt động đúng cách
+// Dưới đây là ví dụ cho POST, PUT, DELETE dựa trên schema mới của bạn:
+
+import { z } from "zod";
+
+const TaiLieuSchema = z.object({
+  tenFile: z.string().min(1).max(45),
+  huongDan: z.string().max(255),
+  ghiChu: z.string().max(155),
+  noiDung: z.string(),
+  fileUrl: z.string().optional(), // Nếu fileUrl là tùy chọn
+  monHocId: z.number().int().positive(),
+});
+
+const TaiLieuUpdateSchema = z.object({
+  tenFile: z.string().min(1).max(45).optional(),
+  huongDan: z.string().max(255).optional(),
+  ghiChu: z.string().max(155).optional(),
+  noiDung: z.string().optional(),
+  fileUrl: z.string().optional(),
+  monHocId: z.number().int().positive().optional(),
+});
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const records = Array.isArray(body) ? body : [body];
+    const validated = TaiLieuSchema.safeParse(body);
 
-    const validated = records.map((item) => {
-      const result = TaiLieuSchema.safeParse(item);
-      if (!result.success) throw result.error.format();
-      return result.data;
+    if (!validated.success) {
+      return NextResponse.json(
+        { error: validated.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const newTaiLieu = await prisma.taiLieu.create({
+      data: {
+        ...validated.data,
+        ngayTao: new Date(), // Set ngayTao automatically on creation
+      },
     });
-
-    const created = await prisma.taiLieu.createMany({ data: validated });
-
-    return NextResponse.json({ created }, { status: 201 });
+    return NextResponse.json(newTaiLieu, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 400 });
+    console.error("Lỗi khi thêm tài liệu:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
 
-export async function DELETE() {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    await prisma.taiLieu.deleteMany();
-    return NextResponse.json({ message: "Đã xóa tất cả tài liệu." });
+    const id = parseInt(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID không hợp lệ" }, { status: 400 });
+    }
+    const body = await req.json();
+    const validated = TaiLieuUpdateSchema.safeParse(body);
+
+    if (!validated.success) {
+      return NextResponse.json(
+        { error: validated.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const updatedTaiLieu = await prisma.taiLieu.update({
+      where: { id: id },
+      data: validated.data,
+    });
+    return NextResponse.json(updatedTaiLieu, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 400 });
+    console.error("Lỗi khi cập nhật tài liệu:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID không hợp lệ" }, { status: 400 });
+    }
+    await prisma.taiLieu.delete({
+      where: { id: id },
+    });
+    return NextResponse.json(
+      { message: "Tài liệu đã được xóa thành công." },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Lỗi khi xóa tài liệu:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

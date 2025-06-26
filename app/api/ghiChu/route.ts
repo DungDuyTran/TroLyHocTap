@@ -1,3 +1,5 @@
+// Trong file API của bạn, ví dụ: app/api/ghiChu/route.ts hoặc pages/api/ghiChu/index.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/client";
 import { z } from "zod";
@@ -6,6 +8,8 @@ const GhiChuSchema = z.object({
   noiDung: z.string().min(1),
   ngayTao: z.string().datetime(),
   userId: z.number().int().positive(),
+  // Add isQuanTrong to schema for validation on POST (if sent)
+  isQuanTrong: z.boolean().optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -35,6 +39,10 @@ export async function GET(req: NextRequest) {
           },
         }
       : {}),
+    // THÊM DÒNG NÀY ĐỂ LỌC GHI CHÚ QUAN TRỌNG
+    ...(searchParams.get("isQuanTrong") && {
+      isQuanTrong: searchParams.get("isQuanTrong") === "true",
+    }),
   };
 
   try {

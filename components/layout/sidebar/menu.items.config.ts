@@ -109,14 +109,14 @@ export const menuItems: SidebarMenuItem[] = [
     href: "/dashboard/ghichu",
     children: [
       {
-        title: "Tạo ghi chú",
+        title: "Ghi chú",
         icon: Pencil,
-        href: "/dashboard/ghichu/tao",
+        href: "/ghiChu/ghiChu",
       },
       {
-        title: "Tài liệu học",
+        title: "Quan trọng",
         icon: FileText,
-        href: "/dashboard/ghichu/tailieu",
+        href: "/ghiChu/quanTrong",
       },
     ],
   },

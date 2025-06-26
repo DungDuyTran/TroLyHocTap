@@ -111,10 +111,46 @@
 }
 
 @layer base {
+  /* ẨN TOÀN BỘ THANH CUỘN TRÊN MỌI TRÌNH DUYỆT */
+
+  /* Chrome, Edge, Safari */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Firefox */
   * {
-    @apply border-border outline-ring/50;
+    scrollbar-width: none !important;
   }
+
+  /* Ngăn scroll luôn (nếu muốn) */
+  html,
   body {
-    @apply bg-background text-foreground;
+    overflow: hidden !important;
   }
+
+  html,
+  body,
+  * {
+    scrollbar-width: none; /* Firefox */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #000 #f3f4f6;
+}
+
+* {
+  @apply border-border outline-ring/50;
+}
+body {
+  @apply bg-background text-foreground;
 }
