@@ -28,8 +28,7 @@ export async function GET(req: NextRequest) {
       skip: (page - 1) * limit,
       take: limit,
       include: {
-        userLichHoc: true,
-        lichHocMonHoc: true,
+        lichHocMonHoc: { include: { monHoc: true } },
       },
     });
 
@@ -44,23 +43,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const items = Array.isArray(body) ? body : [body];
-
-  for (const item of items) {
-    const parsed = LichHocSchema.safeParse(item);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.format() },
-        { status: 400 }
-      );
-    }
-  }
+  const parsed = LichHocSchema.safeParse(body);
+  if (!parsed.success)
+    return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
 
   try {
-    const created = await prisma.$transaction(
-      items.map((item) => prisma.lichHoc.create({ data: item }))
-    );
-
+    const created = await prisma.lichHoc.create({ data: parsed.data });
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 400 });

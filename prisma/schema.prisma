@@ -86,30 +86,40 @@ model BangDiem {
   monHoc        MonHoc @relation(fields: [monHocId], references: [id])
   monHocId      Int
 }
-
 model MonHoc {
-  id        Int    @id @default(autoincrement())
-  tenMon    String @db.VarChar(45)
-  giangVien String @db.VarChar(45)
-  moTa      String @db.VarChar(450)
+  id             Int               @id @default(autoincrement())
+  tenMon         String            @db.VarChar(45)
+  giangVien      String            @db.VarChar(45)
+  moTa           String            @db.VarChar(450)
 
-  taiLieu        TaiLieu[]
   userMonHoc     User_MonHoc[]
   bangDiem       BangDiem[]
   lichHocMonHoc  LichHoc_MonHoc[]
   kyThiMonHoc    KyThi_MonHoc[]
+  monHocTaiLieu  MonHoc_TaiLieu[]
 }
 
 model TaiLieu {
-  id        Int    @id @default(autoincrement())
-  tenFile   String @db.VarChar(45)
-  huongDan  String @db.VarChar(255)
-  ghiChu    String @db.VarChar(155)
-  ngayTao   DateTime
-
-  monHoc    MonHoc @relation(fields: [monHocId], references: [id])
-  monHocId  Int
+  id             Int               @id @default(autoincrement())
+  tenFile        String            @db.VarChar(45)
+  huongDan       String            @db.VarChar(255)
+  ghiChu String? @db.VarChar(155) 
+  ngayTao        DateTime
+  monHocTaiLieu  MonHoc_TaiLieu[]
 }
+
+model MonHoc_TaiLieu {
+  monHoc     MonHoc  @relation(fields: [monHocId], references: [id])
+  monHocId   Int
+
+  taiLieu    TaiLieu @relation(fields: [taiLieuId], references: [id])
+  taiLieuId  Int
+
+  noiDung    String  @db.Text
+
+  @@id([monHocId, taiLieuId])
+}
+
 
 model User_MonHoc {
   user    User   @relation(fields: [userId], references: [id])

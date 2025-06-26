@@ -2,40 +2,38 @@ import { prisma } from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+// Định nghĩa schema validate đầu vào
 const TaiLieuSchema = z.object({
   tenFile: z.string().min(1),
   huongDan: z.string().min(1),
-  ghiChu: z.string().min(0),
+  ghiChu: z.string().optional(),
   ngayTao: z.coerce.date(),
-  monHocId: z.number().int().positive(),
 });
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const limit = Number(searchParams.get("limit")) || 10;
   const page = Number(searchParams.get("page")) || 1;
-
-  const filters: any = {
-    ...(searchParams.get("tenFile") && {
-      tenFile: {
-        contains: searchParams.get("tenFile") || "",
-        mode: "insensitive",
-      },
-    }),
-    ...(searchParams.get("monHocId") && {
-      monHocId: Number(searchParams.get("monHocId")),
-    }),
-  };
+  const tenFile = searchParams.get("tenFile");
 
   try {
-    const totalRecords = await prisma.taiLieu.count({ where: filters });
+    const whereClause = tenFile
+      ? {
+          tenFile: {
+            contains: tenFile,
+            mode: "insensitive",
+          },
+        }
+      : {};
+
+    const totalRecords = await prisma.taiLieu.count({ where: whereClause });
     const totalPages = Math.ceil(totalRecords / limit);
 
     const data = await prisma.taiLieu.findMany({
-      where: filters,
+      where: whereClause,
       skip: (page - 1) * limit,
       take: limit,
-      include: { monHoc: true },
+      orderBy: { ngayTao: "desc" },
     });
 
     return NextResponse.json(
@@ -62,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ created }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error }, { status: 400 });
+    return NextResponse.json({ error: String(error) }, { status: 400 });
   }
 }
 
@@ -71,6 +69,6 @@ export async function DELETE() {
     await prisma.taiLieu.deleteMany();
     return NextResponse.json({ message: "Đã xóa tất cả tài liệu." });
   } catch (error) {
-    return NextResponse.json({ error }, { status: 400 });
+    return NextResponse.json({ error: String(error) }, { status: 400 });
   }
 }

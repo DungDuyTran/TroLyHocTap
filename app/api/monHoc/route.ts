@@ -7,11 +7,8 @@ const MonHocSchema = z.object({
   giangVien: z.string().min(1),
   moTa: z.string().min(1),
 });
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const limit = Number(searchParams.get("limit")) || 10;
-  const page = Number(searchParams.get("page")) || 1;
 
   const filters: any = {
     ...(searchParams.get("tenMon") && {
@@ -29,22 +26,13 @@ export async function GET(req: NextRequest) {
   };
 
   try {
-    const totalRecords = await prisma.monHoc.count({ where: filters });
-    const totalPages = Math.ceil(totalRecords / limit);
-
     const data = await prisma.monHoc.findMany({
       where: filters,
-      skip: (page - 1) * limit,
-      take: limit,
+      orderBy: { tenMon: "asc" },
     });
 
-    return NextResponse.json(
-      {
-        data,
-        extraInfo: { totalRecords, totalPages, page, limit },
-      },
-      { status: 200 }
-    );
+    // ✅ Chỉ trả về mảng
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }

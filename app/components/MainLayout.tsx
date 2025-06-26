@@ -13,7 +13,7 @@ export default function MainLayout({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] md:grid-rows-[70px_1fr] overflow-y-auto bg-white text-white font-bold h-screen z-50">
-      <div className="row-start-1 md:row-start-1 md:col-start-2 bg-[#1D2636]">
+      <div className="row-start-1 md:row-start-1 md:col-start-2 bg-[#1D2636] z-50">
         <TopHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       </div>
 

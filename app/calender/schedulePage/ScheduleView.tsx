@@ -14,14 +14,15 @@ interface EventItem {
   end: string;
 }
 
-interface Props {
+export default function ScheduleView({
+  events,
+  onEventClick,
+}: {
   events: EventItem[];
   onEventClick: (info: EventClickArg) => void;
-}
-
-export default function ScheduleView({ events, onEventClick }: Props) {
+}) {
   return (
-    <div>
+    <div className="bg-black text-white">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"

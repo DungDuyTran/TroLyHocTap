@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import ScheduleView from "./ScheduleView";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg } from "@fullcalendar/core";
 
 interface EventItem {
@@ -16,7 +19,6 @@ export default function SchedulePage() {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [showPopup, setShowPopup] = useState(false);
 
-  // Input values for editing
   const [editTitle, setEditTitle] = useState("");
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
@@ -70,42 +72,92 @@ export default function SchedulePage() {
   return (
     <div className="p-6 min-h-screen bg-black text-white">
       <h1 className="text-2xl font-bold mb-4">📅 Lịch học của bạn</h1>
-      <ScheduleView events={events} onEventClick={handleEventClick} />
+
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="timeGridWeek"
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay",
+        }}
+        events={events}
+        eventClick={handleEventClick}
+        height="auto"
+      />
+
+      <style jsx global>{`
+        /* Nền chung */
+        .fc {
+          background-color: #000 !important;
+          color: white !important;
+        }
+
+        /* Tiêu đề, ngày tháng */
+        .fc-toolbar-title,
+        .fc-col-header-cell-cushion,
+        .fc-daygrid-day-number,
+        .fc-timegrid-slot-label,
+        .fc-timegrid-axis,
+        .fc-daygrid-day-top {
+          color: white !important;
+        }
+
+        /* Header ngày (cái bạn đang bị trắng trắng) */
+        .fc .fc-col-header-cell {
+          background-color: #000 !important;
+          border-color: #4b5563 !important; /* border-gray-600 */
+        }
+
+        /* Các sự kiện */
+        .fc-event {
+          background-color: #16a34a !important; /* bg-green-600 */
+          color: white !important;
+          border: none !important;
+        }
+
+        .fc-event-title {
+          color: white !important;
+        }
+
+        /* Nút bấm */
+        .fc-button {
+          background-color: #1f2937 !important; /* bg-gray-800 */
+          color: white !important;
+          border: none !important;
+        }
+
+        .fc-button:hover {
+          background-color: #374151 !important; /* bg-gray-700 */
+        }
+      `}</style>
 
       {showPopup && selectedEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
           <div className="bg-white text-black p-6 rounded shadow-lg w-[400px] space-y-3">
             <h3 className="text-lg font-bold mb-2">🛠️ Sửa lịch học</h3>
 
-            <div>
-              <label className="block font-medium">Môn học</label>
-              <input
-                type="text"
-                value={editTitle}
-                onChange={(e) => setEditTitle(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-            </div>
+            <input
+              type="text"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="w-full p-2 border rounded"
+              placeholder="Tên môn học"
+            />
 
-            <div>
-              <label className="block font-medium">Bắt đầu</label>
-              <input
-                type="datetime-local"
-                value={editStart}
-                onChange={(e) => setEditStart(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-            </div>
+            <input
+              type="datetime-local"
+              value={editStart}
+              onChange={(e) => setEditStart(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
 
-            <div>
-              <label className="block font-medium">Kết thúc</label>
-              <input
-                type="datetime-local"
-                value={editEnd}
-                onChange={(e) => setEditEnd(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-            </div>
+            <input
+              type="datetime-local"
+              value={editEnd}
+              onChange={(e) => setEditEnd(e.target.value)}
+              className="w-full p-2 border rounded"
+            />
 
             <div className="flex justify-between pt-4">
               <button
@@ -122,7 +174,7 @@ export default function SchedulePage() {
               </button>
               <button
                 onClick={() => setShowPopup(false)}
-                className="px-4 py-2 bg-gray-400 text-white rounded"
+                className="px-4 py-2 bg-gray-500 text-white rounded"
               >
                 ❌ Hủy
               </button>

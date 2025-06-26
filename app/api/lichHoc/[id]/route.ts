@@ -8,43 +8,20 @@ const LichHocSchema = z.object({
   ketThuc: z.coerce.date(),
 });
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const id = Number(params.id);
-  if (isNaN(id))
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-
-  try {
-    const item = await prisma.lichHoc.findUnique({
-      where: { id },
-      include: {
-        userLichHoc: true,
-        lichHocMonHoc: true,
-      },
-    });
-
-    if (!item)
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ data: item });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 500 });
-  }
-}
-
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const id = Number(params.id);
   if (isNaN(id))
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    return NextResponse.json({ error: "ID không hợp lệ" }, { status: 400 });
 
   const body = await req.json();
   const parsed = LichHocSchema.safeParse(body);
-  if (!parsed.success)
+
+  if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+  }
 
   try {
     const updated = await prisma.lichHoc.update({
@@ -52,7 +29,7 @@ export async function PUT(
       data: parsed.data,
     });
 
-    return NextResponse.json({ data: updated });
+    return NextResponse.json({ data: updated }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 400 });
   }
@@ -64,11 +41,11 @@ export async function DELETE(
 ) {
   const id = Number(params.id);
   if (isNaN(id))
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    return NextResponse.json({ error: "ID không hợp lệ" }, { status: 400 });
 
   try {
     const deleted = await prisma.lichHoc.delete({ where: { id } });
-    return NextResponse.json({ data: deleted });
+    return NextResponse.json({ data: deleted }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 400 });
   }

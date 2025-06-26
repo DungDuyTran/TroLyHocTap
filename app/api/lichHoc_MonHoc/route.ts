@@ -35,36 +35,47 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { data, extraInfo: { totalRecords, totalPages, page, limit } },
-      { status: 200 }
-    );
+    // Trả ra mảng event để client dễ xử lý
+    const result = data.map((item) => ({
+      id: `lhmh-${item.lichHocId}-${item.monHocId}`,
+      title: item.monHoc.tenMon,
+      start: item.lichHoc.batDau.toISOString(),
+      end: item.lichHoc.ketThuc.toISOString(),
+    }));
+
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
+    console.error("❌ Lỗi GET /api/lichHoc_monHoc:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const items = Array.isArray(body) ? body : [body];
-
-  for (const item of items) {
-    const parsed = LichHocMonHocSchema.safeParse(item);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.format() },
-        { status: 400 }
-      );
-    }
-  }
-
   try {
+    const body = await req.json();
+    const items = Array.isArray(body) ? body : [body];
+
+    for (const item of items) {
+      const parsed = LichHocMonHocSchema.safeParse(item);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: parsed.error.format() },
+          { status: 400 }
+        );
+      }
+    }
+
     const created = await prisma.$transaction(
-      items.map((item) => prisma.lichHoc_MonHoc.create({ data: item }))
+      items.map((item) =>
+        prisma.lichHoc_MonHoc.create({
+          data: item,
+        })
+      )
     );
 
-    return NextResponse.json({ data: created }, { status: 201 });
+    return NextResponse.json(created, { status: 201 });
   } catch (error) {
+    console.error("❌ Lỗi POST /api/lichHoc_monHoc:", error);
     return NextResponse.json({ error: String(error) }, { status: 400 });
   }
 }
