@@ -65,24 +65,14 @@ export const menuItems: SidebarMenuItem[] = [
     href: "/dashboard/thongke",
     children: [
       {
-        title: "Ngày",
+        title: "Đồng hồ",
         icon: ListOrdered,
-        href: "/dashboard/monhoc/danhsach",
+        href: "/thongKe/dongHo",
       },
       {
-        title: "Tuần",
+        title: "Thống kê",
         icon: ListOrdered,
-        href: "/dashboard/monhoc/danhsach",
-      },
-      {
-        title: "Tháng",
-        icon: ListOrdered,
-        href: "/dashboard/monhoc/danhsach",
-      },
-      {
-        title: "Năm",
-        icon: ListOrdered,
-        href: "/dashboard/monhoc/danhsach",
+        href: "/thongKe/thongKe",
       },
     ],
   },

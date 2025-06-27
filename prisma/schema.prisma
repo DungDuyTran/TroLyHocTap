@@ -109,6 +109,17 @@ model TaiLieu {
   monHocId  Int
   monHoc    MonHoc   @relation(fields: [monHocId], references: [id])
 }
+model LichHocRecord {
+  id        Int      @id @default(autoincrement())
+  startTime DateTime // Thời điểm bắt đầu phiên học
+  endTime   DateTime? // Thời điểm kết thúc phiên học (có thể null nếu phiên học đang diễn ra)
+  duration  Int?     // Thời lượng học tính bằng giây (có thể được tính toán từ startTime và endTime)
+  userId    String?  // ID người dùng (nếu có hệ thống người dùng, hãy điều chỉnh kiểu dữ liệu nếu userId là Int)
+  subject   String?  // Môn học của phiên học (ví dụ: "Toán", "Văn")
+  note      String?  // Ghi chú bổ sung cho phiên học
+
+  @@map("lichHocRecord") // Tên bảng trong cơ sở dữ liệu sẽ là 'lichHocRecord'
+}
 
 // model MonHoc_TaiLieu {
 //   monHoc     MonHoc  @relation(fields: [monHocId], references: [id])
