@@ -137,6 +137,7 @@ model KyThi {
   tenKyThi    String @db.VarChar(45)
   ghiChu      String? @db.VarChar(155)
   thoiGianThi DateTime
+  daThamGia    Boolean?  @default(false)
 
   lichSuThi    LichSuThi[]
   kyThiMonHoc  KyThi_MonHoc[]

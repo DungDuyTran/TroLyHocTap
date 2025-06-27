@@ -1,70 +1,102 @@
+// app/api/kyThi_monHoc/route.ts
 import { prisma } from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const KyThiMonHocSchema = z.object({
-  kyThiId: z.number(),
-  monHocId: z.number(),
+  kyThiId: z.number().int().positive("ID Kỳ thi phải là số nguyên dương."),
+  monHocId: z.number().int().positive("ID Môn học phải là số nguyên dương."),
 });
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const page = Number(searchParams.get("page") || "1");
-  const limit = Number(searchParams.get("limit") || "10");
+  const kyThiId = searchParams.get("kyThiId");
+  const monHocId = searchParams.get("monHocId");
 
-  const where = {
-    ...(searchParams.get("kyThiId") && {
-      kyThiId: Number(searchParams.get("kyThiId")),
-    }),
-    ...(searchParams.get("monHocId") && {
-      monHocId: Number(searchParams.get("monHocId")),
-    }),
-  };
+  const where: any = {};
+  if (kyThiId) {
+    where.kyThiId = parseInt(kyThiId);
+  }
+  if (monHocId) {
+    where.monHocId = parseInt(monHocId);
+  }
 
   try {
-    const totalRecords = await prisma.kyThi_MonHoc.count({ where });
-    const totalPages = Math.ceil(totalRecords / limit);
-
     const data = await prisma.kyThi_MonHoc.findMany({
       where,
-      skip: (page - 1) * limit,
-      take: limit,
       include: {
         kyThi: true,
         monHoc: true,
       },
     });
-
-    return NextResponse.json(
-      { data, extraInfo: { totalRecords, totalPages, page, limit } },
-      { status: 200 }
-    );
-  } catch (error) {
+    return NextResponse.json({ data }, { status: 200 });
+  } catch (error: any) {
+    // Added : any to explicitly type error
+    console.error("Lỗi khi tải quan hệ KyThi_MonHoc:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const items = Array.isArray(body) ? body : [body];
+  try {
+    const body = await req.json();
+    const parsed = KyThiMonHocSchema.safeParse(body);
 
-  for (const item of items) {
-    const parsed = KyThiMonHocSchema.safeParse(item);
     if (!parsed.success) {
+      console.error("Lỗi xác thực POST KyThi_MonHoc:", parsed.error.format());
       return NextResponse.json(
         { error: parsed.error.format() },
         { status: 400 }
       );
     }
+
+    const newKyThiMonHoc = await prisma.kyThi_MonHoc.create({
+      data: parsed.data,
+    });
+    return NextResponse.json(newKyThiMonHoc, { status: 201 });
+  } catch (error: any) {
+    // Added : any
+    console.error("Lỗi khi tạo quan hệ KyThi_MonHoc:", error);
+    if (error.code === "P2002") {
+      return NextResponse.json(
+        { error: "Quan hệ này đã tồn tại." },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
+}
 
+export async function DELETE(req: NextRequest) {
   try {
-    const created = await prisma.$transaction(
-      items.map((item) => prisma.kyThi_MonHoc.create({ data: item }))
-    );
+    const body = await req.json();
+    const parsed = KyThiMonHocSchema.safeParse(body);
 
-    return NextResponse.json({ data: created }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: String(error) }, { status: 400 });
+    if (!parsed.success) {
+      console.error("Lỗi xác thực DELETE KyThi_MonHoc:", parsed.error.format());
+      return NextResponse.json(
+        { error: parsed.error.format() },
+        { status: 400 }
+      );
+    }
+
+    const { kyThiId, monHocId } = parsed.data;
+
+    await prisma.kyThi_MonHoc.delete({
+      where: {
+        kyThiId_monHocId: {
+          kyThiId: kyThiId,
+          monHocId: monHocId,
+        },
+      },
+    });
+    return NextResponse.json(
+      { message: "Quan hệ KyThi_MonHoc đã được xóa." },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    // Added : any
+    console.error("Lỗi khi xóa quan hệ KyThi_MonHoc:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }

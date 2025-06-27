@@ -128,12 +128,12 @@ export const menuItems: SidebarMenuItem[] = [
       {
         title: "Lịch thi",
         icon: CalendarCheck2,
-        href: "/dashboard/kythi/lichthi",
+        href: "/lichThi/lichThi",
       },
       {
         title: "Lịch sử thi",
         icon: History,
-        href: "/dashboard/kythi/lichsu",
+        href: "/lichThi/lichSuThi",
       },
     ],
   },
