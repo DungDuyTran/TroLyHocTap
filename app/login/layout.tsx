@@ -12,11 +12,12 @@ export default function LoginLayout({
   children: React.ReactNode;
 }) {
   return (
-    <MainLayout>
+    <div>
+      {" "}
       {children}
       <LandingPage />
       <CozeChatWidget />
-    </MainLayout>
+    </div>
   );
 }
 
