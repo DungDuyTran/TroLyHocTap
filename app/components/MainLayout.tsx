@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Sidebar from "@/components/ui/SideBar";
 import TopHeader from "@/components/ui/TopHeader";
+import LandingPage from "../gioiThieu/page";
 
 export default function MainLayout({
   children,

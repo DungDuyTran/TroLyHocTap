@@ -8,8 +8,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  AreaChart,
+  Area, // Changed to AreaChart and Area
 } from "recharts";
 import {
   Book,
@@ -29,11 +29,6 @@ interface LichHocRecord {
   userId?: string | null;
   subject?: string | null;
   note?: string | null;
-}
-
-interface MonHoc {
-  id: number;
-  tenMon: string;
 }
 
 interface DailyStudySummary {
@@ -60,9 +55,8 @@ export default function LichHocTrackerApp() {
   const [loading, setLoading] = useState<boolean>(false);
   const [notification, setNotification] = useState<{
     message: string;
-    type: "success" | "error";
+    type: "success" | "error" | "info";
   } | null>(null);
-  const [danhSachMonHoc, setDanhSachMonHoc] = useState<MonHoc[]>([]);
   const [studyRecords, setStudyRecords] = useState<LichHocRecord[]>([]);
 
   const [dailySummary, setDailySummary] = useState<DailyStudySummary[]>([]);
@@ -75,33 +69,18 @@ export default function LichHocTrackerApp() {
     "daily" | "weekly" | "monthly" | "yearly"
   >("daily");
 
-  const LICHHOC_API_URL = "http://localhost:3000/api/lichHoc";
-  const MONHOC_API_URL = "http://localhost:3000/api/monHoc";
+  const LICHHOC_API_URL = "http://localhost:3000/api/lichHocRecord";
   const MOCK_USER_ID = "user123";
 
-  const showNotification = (message: string, type: "success" | "error") => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" | "info"
+  ) => {
     setNotification({ message, type });
     setTimeout(() => {
       setNotification(null);
     }, 3000);
   };
-
-  useEffect(() => {
-    const fetchMonHoc = async () => {
-      try {
-        const response = await fetch(MONHOC_API_URL);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: MonHoc[] = await response.json();
-        setDanhSachMonHoc(data);
-      } catch (error: any) {
-        console.error("Lỗi khi tải môn học:", error);
-        showNotification(`Lỗi tải môn học: ${error.message}`, "error");
-      }
-    };
-    fetchMonHoc();
-  }, []);
 
   const fetchStudyRecords = async () => {
     setLoading(true);
@@ -117,7 +96,7 @@ export default function LichHocTrackerApp() {
       showNotification("Tải dữ liệu thành công!", "success");
     } catch (error: any) {
       console.error("Lỗi khi tải bản ghi lịch học:", error);
-      showNotification(`Lỗi tải dữ liệu: ${error.message}`, "error");
+      showNotification(`Lỗi tải dữ liệu: ${(error as Error).message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -246,20 +225,39 @@ export default function LichHocTrackerApp() {
 
   return (
     <div className="min-h-screen p-6 bg-gradient-to-br from-gray-900 to-black text-white font-inter">
-      <h1 className="text-4xl font-extrabold mb-8 text-center text-green-400 drop-shadow-lg">
+      <h1 className="text-5xl font-extrabold mb-8 text-center text-green-600 drop-shadow-lg">
         📈 Thống Kê Học Tập
       </h1>
 
       {notification && (
         <div
           className={`fixed top-6 right-6 p-4 rounded-lg shadow-lg text-white flex items-center transition-all duration-300 transform z-50 ${
-            notification.type === "success" ? "bg-green-500" : "bg-red-500"
+            notification.type === "success"
+              ? "bg-green-500"
+              : notification.type === "error"
+              ? "bg-red-500"
+              : "bg-blue-500"
           }`}
         >
           {notification.type === "success" ? (
             <CheckCircle className="h-6 w-6 mr-2" />
-          ) : (
+          ) : notification.type === "error" ? (
             <XCircle className="h-6 w-6 mr-2" />
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
           )}
           <span>{notification.message}</span>
           <button
@@ -337,7 +335,7 @@ export default function LichHocTrackerApp() {
                 </div>
                 <div className="w-full h-96">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
+                    <AreaChart // Changed from BarChart
                       data={getChartData()}
                       margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
@@ -371,13 +369,15 @@ export default function LichHocTrackerApp() {
                         labelStyle={{ color: "#a0aec0" }}
                       />
                       <Legend />
-                      <Bar
+                      <Area
+                        type="monotone"
                         dataKey="totalDuration"
+                        stroke="#8884d8"
                         fill="#8884d8"
                         name="Thời gian học"
-                        radius={[10, 10, 0, 0]}
-                      />
-                    </BarChart>
+                      />{" "}
+                      {/* Changed from Bar to Area */}
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
               </>
@@ -439,25 +439,6 @@ export default function LichHocTrackerApp() {
           </p>
         )}
       </div>
-    </div>
-  );
-}
-
-interface NotificationProps {
-  message: string;
-  type: "success" | "error";
-}
-
-function Notification({ message, type }: NotificationProps) {
-  const bgColor = type === "success" ? "bg-green-500" : "bg-red-500";
-  const IconComponent = type === "success" ? CheckCircle : XCircle;
-
-  return (
-    <div
-      className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg text-white flex items-center ${bgColor} transition-all duration-300 transform`}
-    >
-      <IconComponent className="h-6 w-6 mr-2" />
-      <span>{message}</span>
     </div>
   );
 }

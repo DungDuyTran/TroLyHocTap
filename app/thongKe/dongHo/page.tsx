@@ -1,18 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Clock,
-  Play,
-  Pause,
-  StopCircle,
-  RefreshCcw,
-  Book,
-  Info,
-  Timer,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Clock, Play, Pause, StopCircle } from "lucide-react";
 
 interface LichHocRecord {
   id: number;
@@ -24,79 +13,189 @@ interface LichHocRecord {
   note?: string | null;
 }
 
-interface MonHoc {
-  id: number;
-  tenMon: string;
-}
-
-interface StudyTimersProps {
-  danhSachMonHoc: MonHoc[];
+interface StudyStopwatchProps {
   onSessionComplete: () => void;
-  showNotification: (message: string, type: "success" | "error") => void;
+  showNotification: (
+    message: string,
+    type: "success" | "error" | "info"
+  ) => void;
   loading: boolean;
 }
 
-export default function StudyTimersComponent({
-  danhSachMonHoc,
-  onSessionComplete,
-  showNotification,
+export default function StudyStopwatchComponent({
+  onSessionComplete = () => {},
+  showNotification = () => {},
   loading,
-}: StudyTimersProps) {
+}: StudyStopwatchProps) {
   const [studyTimerRunning, setStudyTimerRunning] = useState<boolean>(false);
   const [elapsedStudyTime, setElapsedStudyTime] = useState<number>(0);
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
 
-  const [countdownTimeInput, setCountdownTimeInput] = useState<number>(25);
-  const [currentCountdownRemaining, setCurrentCountdownRemaining] =
-    useState<number>(25 * 60);
-  const [countdownTimerRunning, setCountdownTimerRunning] =
-    useState<boolean>(false);
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [subject, setSubject] = useState<string>("");
-  const [note, setNote] = useState<string>("");
-
   const studyIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentElapsedRef = useRef(elapsedStudyTime);
+  const currentSessionIdRef = useRef(currentSessionId);
+  const studyTimerRunningRef = useRef(studyTimerRunning);
 
-  const LICHHOC_API_URL = "http://localhost:3000/api/lichHoc";
+  useEffect(() => {
+    currentElapsedRef.current = elapsedStudyTime;
+  }, [elapsedStudyTime]);
+
+  useEffect(() => {
+    currentSessionIdRef.current = currentSessionId;
+  }, [currentSessionId]);
+
+  useEffect(() => {
+    studyTimerRunningRef.current = studyTimerRunning;
+  }, [studyTimerRunning]);
+
+  const LICHHOC_API_URL = "http://localhost:3000/api/lichHocRecord";
   const MOCK_USER_ID = "user123";
 
-  const startStudyTimer = async () => {
-    if (studyTimerRunning) return;
-
-    setStudyTimerRunning(true);
-    setElapsedStudyTime(0);
-
+  const createNewSessionRecord = async () => {
     try {
+      const newSessionStartTime = new Date().toISOString();
       const response = await fetch(LICHHOC_API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          startTime: new Date().toISOString(),
+          startTime: newSessionStartTime,
           userId: MOCK_USER_ID,
-          subject,
-          note,
+          subject: undefined,
+          note: undefined,
         }),
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const newRecord: LichHocRecord = await response.json();
-      setCurrentSessionId(newRecord.id);
-      showNotification("Bắt đầu phiên học mới!", "success");
-
-      studyIntervalRef.current = setInterval(() => {
-        setElapsedStudyTime((prevTime) => prevTime + 1);
-      }, 1000);
+      return newRecord;
     } catch (error: any) {
-      console.error("Lỗi khi bắt đầu phiên học:", error);
-      showNotification(`Lỗi: ${error.message}`, "error");
-      setStudyTimerRunning(false);
+      console.error("Lỗi khi tạo phiên học mới:", error);
+      showNotification(`Lỗi: ${(error as Error).message}`, "error");
+      return null;
     }
   };
 
-  const stopStudyTimer = async () => {
-    if (!studyTimerRunning || currentSessionId === null) return;
+  const updateSessionRecord = async (
+    id: number,
+    updateData: {
+      endTime?: string;
+      duration?: number;
+      subject?: string;
+      note?: string;
+    }
+  ) => {
+    try {
+      const response = await fetch(`${LICHHOC_API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return true;
+    } catch (error: any) {
+      console.error("Lỗi khi cập nhật phiên học:", error);
+      showNotification(`Lỗi: ${(error as Error).message}`, "error");
+      return false;
+    }
+  };
+
+  const handleStartOrResumeStudySession = async () => {
+    if (studyTimerRunningRef.current) return;
+
+    const storedPausedSession = localStorage.getItem("pausedStudySession");
+    if (storedPausedSession) {
+      try {
+        const sessionData = JSON.parse(storedPausedSession);
+        const { id, startTime, pausedTime } = sessionData;
+
+        const response = await fetch(`${LICHHOC_API_URL}/${id}`);
+        if (response.ok) {
+          const existingRecord: LichHocRecord = await response.json();
+          if (existingRecord && !existingRecord.endTime) {
+            setCurrentSessionId(id);
+            setElapsedStudyTime(pausedTime);
+            setStudyTimerRunning(true);
+            showNotification("Đã tiếp tục phiên học!", "success");
+            localStorage.removeItem("pausedStudySession");
+            localStorage.setItem(
+              "activeStudySession",
+              JSON.stringify({ id, startTime })
+            );
+            return;
+          }
+        }
+        localStorage.removeItem("pausedStudySession");
+        showNotification(
+          "Phiên học tạm dừng không hợp lệ hoặc đã kết thúc, bắt đầu phiên mới.",
+          "info"
+        );
+      } catch (error: any) {
+        console.error("Lỗi khi khôi phục phiên tạm dừng:", error);
+        localStorage.removeItem("pausedStudySession");
+        showNotification(
+          `Lỗi khôi phục phiên tạm dừng: ${
+            (error as Error).message
+          }. Bắt đầu phiên mới.`,
+          "error"
+        );
+      }
+    }
+
+    const storedActiveSession = localStorage.getItem("activeStudySession");
+    if (storedActiveSession) {
+      try {
+        const sessionData = JSON.parse(storedActiveSession);
+        const { id, startTime } = sessionData;
+
+        const response = await fetch(`${LICHHOC_API_URL}/${id}`);
+        if (response.ok) {
+          const existingRecord: LichHocRecord = await response.json();
+          if (existingRecord && !existingRecord.endTime) {
+            setCurrentSessionId(id);
+            setElapsedStudyTime(
+              Math.floor((Date.now() - new Date(startTime).getTime()) / 1000)
+            );
+            setStudyTimerRunning(true);
+            showNotification("Đã tiếp tục phiên học trước đó!", "success");
+            return;
+          }
+        }
+        localStorage.removeItem("activeStudySession");
+        showNotification(
+          "Phiên học trước đó không hợp lệ hoặc đã kết thúc, bắt đầu phiên mới.",
+          "info"
+        );
+      } catch (error: any) {
+        console.error("Lỗi khi khôi phục phiên đang chạy:", error);
+        localStorage.removeItem("activeStudySession");
+        showNotification(
+          `Lỗi khôi phục phiên đang chạy: ${
+            (error as Error).message
+          }. Bắt đầu phiên mới.`,
+          "error"
+        );
+      }
+    }
+
+    const newRecord = await createNewSessionRecord();
+    if (newRecord) {
+      setCurrentSessionId(newRecord.id);
+      setElapsedStudyTime(0);
+      setStudyTimerRunning(true);
+      localStorage.setItem(
+        "activeStudySession",
+        JSON.stringify({ id: newRecord.id, startTime: newRecord.startTime })
+      );
+    }
+  };
+
+  const handlePauseStudySession = async () => {
+    if (!studyTimerRunningRef.current || currentSessionIdRef.current === null) {
+      return;
+    }
 
     setStudyTimerRunning(false);
     if (studyIntervalRef.current) {
@@ -104,76 +203,168 @@ export default function StudyTimersComponent({
       studyIntervalRef.current = null;
     }
 
-    try {
-      const endTime = new Date().toISOString();
-      const duration = elapsedStudyTime;
+    localStorage.setItem(
+      "pausedStudySession",
+      JSON.stringify({
+        id: currentSessionIdRef.current,
+        startTime: new Date(
+          Date.now() - currentElapsedRef.current * 1000
+        ).toISOString(),
+        pausedTime: currentElapsedRef.current,
+      })
+    );
+    localStorage.removeItem("activeStudySession");
 
-      const response = await fetch(`${LICHHOC_API_URL}/${currentSessionId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endTime: endTime,
-          duration: duration,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    showNotification("Phiên học đã được tạm dừng.", "info");
+    onSessionComplete();
+  };
+
+  const handleEndStudySession = async () => {
+    if (currentSessionIdRef.current === null) {
+      setStudyTimerRunning(false);
+      if (studyIntervalRef.current) {
+        clearInterval(studyIntervalRef.current);
+        studyIntervalRef.current = null;
       }
+      localStorage.removeItem("activeStudySession");
+      localStorage.removeItem("pausedStudySession");
+      setCurrentSessionId(null);
+      setElapsedStudyTime(0);
+      showNotification(
+        "Không có phiên học nào đang chạy hoặc tạm dừng để kết thúc.",
+        "info"
+      );
+      onSessionComplete();
+      return;
+    }
+
+    setStudyTimerRunning(false);
+    if (studyIntervalRef.current) {
+      clearInterval(studyIntervalRef.current);
+      studyIntervalRef.current = null;
+    }
+
+    const success = await updateSessionRecord(currentSessionIdRef.current, {
+      endTime: new Date().toISOString(),
+      duration: currentElapsedRef.current,
+      subject: undefined,
+      note: undefined,
+    });
+
+    if (success) {
       showNotification("Kết thúc phiên học!", "success");
       setCurrentSessionId(null);
       setElapsedStudyTime(0);
-      setSubject("");
-      setNote("");
+      localStorage.removeItem("activeStudySession");
+      localStorage.removeItem("pausedStudySession");
       onSessionComplete();
-    } catch (error: any) {
-      console.error("Lỗi khi kết thúc phiên học:", error);
-      showNotification(`Lỗi: ${error.message}`, "error");
+    } else {
+      showNotification("Không thể kết thúc phiên học.", "error");
     }
   };
 
-  const startCountdown = () => {
-    if (countdownIntervalRef.current)
-      clearInterval(countdownIntervalRef.current);
-
-    if (currentCountdownRemaining <= 0) {
-      showNotification(
-        "Thời gian đếm ngược đã hết. Vui lòng đặt lại.",
-        "error"
-      );
-      return;
+  useEffect(() => {
+    if (studyTimerRunning) {
+      if (studyIntervalRef.current) {
+        clearInterval(studyIntervalRef.current);
+      }
+      studyIntervalRef.current = setInterval(() => {
+        setElapsedStudyTime((prevTime) => prevTime + 1);
+      }, 1000);
+    } else {
+      if (studyIntervalRef.current) {
+        clearInterval(studyIntervalRef.current);
+        studyIntervalRef.current = null;
+      }
     }
-    if (countdownTimerRunning) return;
 
-    setCountdownTimerRunning(true);
+    return () => {
+      if (studyIntervalRef.current) {
+        clearInterval(studyIntervalRef.current);
+        studyIntervalRef.current = null;
+      }
+    };
+  }, [studyTimerRunning]);
 
-    countdownIntervalRef.current = setInterval(() => {
-      setCurrentCountdownRemaining((prev) => {
-        if (prev <= 1) {
-          if (countdownIntervalRef.current)
-            clearInterval(countdownIntervalRef.current);
-          setCountdownTimerRunning(false);
-          showNotification("Hết giờ! Hoàn thành mục tiêu học tập!", "success");
-          return 0;
+  useEffect(() => {
+    handleStartOrResumeStudySession();
+
+    const handleBeforeUnload = async () => {
+      if (
+        studyTimerRunningRef.current &&
+        currentSessionIdRef.current !== null
+      ) {
+        const endTime = new Date().toISOString();
+        const duration = currentElapsedRef.current;
+        try {
+          await fetch(`${LICHHOC_API_URL}/${currentSessionIdRef.current}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              endTime: endTime,
+              duration: duration,
+              subject: undefined,
+              note: undefined,
+            }),
+            keepalive: true,
+          });
+          localStorage.removeItem("activeStudySession");
+          localStorage.removeItem("pausedStudySession");
+        } catch (error) {
+          console.error("Lỗi khi lưu dữ liệu khi tắt trang:", error);
         }
-        return prev - 1;
-      });
-    }, 1000);
-  };
+      } else if (
+        currentSessionIdRef.current !== null &&
+        !studyTimerRunningRef.current
+      ) {
+        const sessionToSave = {
+          id: currentSessionIdRef.current,
+          startTime: new Date(
+            Date.now() - currentElapsedRef.current * 1000
+          ).toISOString(),
+          pausedTime: currentElapsedRef.current,
+        };
+        localStorage.setItem(
+          "pausedStudySession",
+          JSON.stringify(sessionToSave)
+        );
+        localStorage.removeItem("activeStudySession");
+      } else {
+        localStorage.removeItem("activeStudySession");
+        localStorage.removeItem("pausedStudySession");
+      }
+    };
 
-  const pauseCountdown = () => {
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-      setCountdownTimerRunning(false);
-    }
-  };
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-  const resetCountdown = () => {
-    if (countdownIntervalRef.current)
-      clearInterval(countdownIntervalRef.current);
-    setCountdownTimerRunning(false);
-    setCurrentCountdownRemaining(countdownTimeInput * 60);
-  };
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (studyIntervalRef.current) {
+        clearInterval(studyIntervalRef.current);
+        studyIntervalRef.current = null;
+      }
+      if (
+        studyTimerRunningRef.current &&
+        currentSessionIdRef.current !== null
+      ) {
+        const sessionToSave = {
+          id: currentSessionIdRef.current,
+          startTime: new Date(
+            Date.now() - currentElapsedRef.current * 1000
+          ).toISOString(),
+          pausedTime: currentElapsedRef.current,
+        };
+        localStorage.setItem(
+          "pausedStudySession",
+          JSON.stringify(sessionToSave)
+        );
+        localStorage.removeItem("activeStudySession");
+      } else {
+        localStorage.removeItem("activeStudySession");
+        localStorage.removeItem("pausedStudySession");
+      }
+    };
+  }, []);
 
   const formatTime = (seconds: number) => {
     if (seconds < 0) return "00:00:00";
@@ -184,164 +375,68 @@ export default function StudyTimersComponent({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 my-5">
-      <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-green-600">
-        <h2 className="text-3xl font-bold mb-6 text-center text-yellow-300">
-          Đồng Hồ Ghi Nhận Giờ Học
-        </h2>
-        <p className="text-sm text-gray-400 text-center mb-4">
-          Sử dụng đồng hồ này để ghi lại thời gian học tập thực tế của bạn.
-        </p>
-        <div className="flex items-center justify-center space-x-4 mb-6">
-          <Clock size={48} className="text-green-400" />
-          <span className="text-5xl font-mono tracking-wider text-green-400">
-            {formatTime(elapsedStudyTime)}
-          </span>
-        </div>
-
-        <div className="mb-4">
-          <label
-            htmlFor="subject"
-            className="block text-gray-300 text-sm font-bold mb-2"
-          >
-            <Book size={16} className="inline-block mr-1" /> Môn học:
-          </label>
-          <select
-            id="subject"
-            className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            disabled={studyTimerRunning}
-          >
-            <option value="">Chọn môn học</option>
-            {(danhSachMonHoc || []).map((mon) => (
-              <option key={mon.id} value={mon.tenMon}>
-                {mon.tenMon}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-6">
-          <label
-            htmlFor="note"
-            className="block text-gray-300 text-sm font-bold mb-2"
-          >
-            <Info size={16} className="inline-block mr-1" /> Ghi chú:
-          </label>
-          <input
-            type="text"
-            id="note"
-            className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ví dụ: Chương 1 - Đại số tuyến tính"
-            disabled={studyTimerRunning}
-          />
-        </div>
-
-        <div className="flex justify-center space-x-4">
-          {!studyTimerRunning ? (
-            <button
-              onClick={startStudyTimer}
-              className="px-6 py-3 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
-              disabled={loading || !subject}
-            >
-              <Play size={24} />
-              <span>Bắt đầu</span>
-            </button>
-          ) : (
-            <button
-              onClick={stopStudyTimer}
-              className="px-6 py-3 bg-red-600 rounded-full shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
-              disabled={loading}
-            >
-              <StopCircle size={24} />
-              <span>Dừng</span>
-            </button>
-          )}
-        </div>
+    <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-green-600 h-[350px] w-[750px] mt-8 ml-[200px]">
+      <h2 className="text-3xl font-bold mb-6 text-center text-green-600">
+        Đồng Hồ Ghi Nhận Giờ Học
+      </h2>
+      <p className="text-sm text-gray-400 text-center mb-4">
+        Ghi lại thời gian học tập thực tế của bạn một cách đơn giản.
+      </p>
+      <div className="flex items-center justify-center space-x-4 mb-6">
+        <Clock size={48} className="text-green-400" />
+        <span className="text-5xl font-mono tracking-wider text-green-400">
+          {formatTime(elapsedStudyTime)}
+        </span>
       </div>
-
-      <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-green-600">
-        <h2 className="text-3xl font-bold mb-6 text-center text-yellow-300">
-          Đồng Hồ Đếm Ngược Mục Tiêu
-        </h2>
-        <p className="text-sm text-gray-400 text-center mb-4">
-          Thiết lập thời gian học tập mục tiêu và bắt đầu đếm ngược.
-        </p>
-        <div className="flex items-center justify-center space-x-4 mb-6">
-          <Timer size={48} className="text-green-400" />
-          <span className="text-5xl font-mono tracking-wider text-green-400">
-            {formatTime(currentCountdownRemaining)}
-          </span>
-        </div>
-
-        <div className="mb-6">
-          <label
-            htmlFor="countdownInput"
-            className="block text-gray-300 text-sm font-bold mb-2"
+      <div className="flex justify-center space-x-4">
+        {!studyTimerRunning && currentSessionId === null ? (
+          <button
+            onClick={handleStartOrResumeStudySession}
+            className="px-6 py-3 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
+            disabled={loading}
           >
-            Thiết lập mục tiêu (phút):
-          </label>
-          <input
-            type="number"
-            id="countdownInput"
-            className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
-            value={countdownTimeInput}
-            onChange={(e) => {
-              const minutes = parseInt(e.target.value);
-              setCountdownTimeInput(isNaN(minutes) ? 0 : minutes);
-              setCurrentCountdownRemaining(isNaN(minutes) ? 0 : minutes * 60);
-            }}
-            min="0"
-            placeholder="Nhập số phút mục tiêu"
-            disabled={countdownTimerRunning}
-          />
-        </div>
-
-        <div className="flex justify-center space-x-4">
-          {!countdownTimerRunning &&
-          currentCountdownRemaining === countdownTimeInput * 60 &&
-          countdownTimeInput > 0 ? (
+            <Play size={24} />
+            <span>Bắt đầu</span>
+          </button>
+        ) : studyTimerRunning ? (
+          <>
             <button
-              onClick={startCountdown}
-              className="px-6 py-3 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
-            >
-              <Play size={24} />
-              <span>Bắt đầu</span>
-            </button>
-          ) : countdownTimerRunning ? (
-            <button
-              onClick={pauseCountdown}
+              onClick={handlePauseStudySession}
               className="px-6 py-3 bg-orange-600 rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
+              disabled={loading}
             >
               <Pause size={24} />
               <span>Tạm dừng</span>
             </button>
-          ) : (
             <button
-              onClick={startCountdown}
+              onClick={handleEndStudySession}
+              className="px-6 py-3 bg-red-600 rounded-full shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
+              disabled={loading}
+            >
+              <StopCircle size={24} />
+              <span>Kết thúc</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={handleStartOrResumeStudySession}
               className="px-6 py-3 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
-              disabled={currentCountdownRemaining <= 0}
+              disabled={loading}
             >
               <Play size={24} />
-              <span>
-                {currentCountdownRemaining > 0 &&
-                currentCountdownRemaining < countdownTimeInput * 60
-                  ? "Tiếp tục"
-                  : "Bắt đầu"}
-              </span>
+              <span>Tiếp tục</span>
             </button>
-          )}
-          <button
-            onClick={resetCountdown}
-            className="px-6 py-3 bg-gray-600 rounded-full shadow-lg hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
-          >
-            <RefreshCcw size={24} />
-            <span>Đặt lại</span>
-          </button>
-        </div>
+            <button
+              onClick={handleEndStudySession}
+              className="px-6 py-3 bg-red-600 rounded-full shadow-lg hover:bg-red-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
+              disabled={loading}
+            >
+              <StopCircle size={24} />
+              <span>Kết thúc</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

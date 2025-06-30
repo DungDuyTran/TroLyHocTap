@@ -676,84 +676,93 @@ function TaiLieuEditModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-md border border-green-500 mt-[20px]">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 mt-12">
+      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-2xl border border-green-500 max-h-[85vh] overflow-y-auto pb-12">
         <h2 className="text-3xl font-bold mb-6 text-center text-green-400">
           {title}
         </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+        <form onSubmit={handleSubmit} className="space-y-4 text-white">
+          {/* Tên File */}
+          <div className="flex items-center space-x-4">
             <label
               htmlFor="tenFile"
-              className="block text-gray-300 text-sm font-bold mb-2"
+              className="w-32 font-bold text-sm text-gray-300"
             >
               Tên File
             </label>
             <input
               type="text"
               id="tenFile"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 py-2 px-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               value={editedTaiLieu.tenFile}
               onChange={handleInputChange}
               required
             />
           </div>
-          <div className="mb-4">
+
+          {/* Nội dung */}
+          <div>
             <label
               htmlFor="noiDung"
-              className="block text-gray-300 text-sm font-bold mb-2"
+              className="block text-sm font-bold mb-2 text-gray-300"
             >
               Nội dung tài liệu (văn bản)
             </label>
             <textarea
               id="noiDung"
-              rows={6}
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              rows={4}
+              className="w-full py-2 px-3 bg-gray-700 border border-gray-600 rounded-md resize-y overflow-y-auto focus:outline-none focus:ring-2 focus:ring-green-500 mb-1"
               value={editedTaiLieu.noiDung}
               onChange={handleInputChange}
               required
             ></textarea>
           </div>
-          <div className="mb-4">
+
+          {/* Hướng dẫn */}
+          <div className="flex items-center space-x-4">
             <label
               htmlFor="huongDan"
-              className="block text-gray-300 text-sm font-bold mb-2"
+              className="w-32 font-bold text-sm text-gray-300"
             >
               Hướng dẫn
             </label>
             <input
               type="text"
               id="huongDan"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 py-2 px-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               value={editedTaiLieu.huongDan}
               onChange={handleInputChange}
             />
           </div>
-          <div className="mb-4">
+
+          {/* Ghi chú */}
+          <div className="flex items-center space-x-4">
             <label
               htmlFor="ghiChu"
-              className="block text-gray-300 text-sm font-bold mb-2"
+              className="w-32 font-bold text-sm text-gray-300"
             >
               Ghi chú
             </label>
             <input
               type="text"
               id="ghiChu"
-              className="shadow appearance-none border border-gray-600 rounded-md w-full py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 py-2 px-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               value={editedTaiLieu.ghiChu}
               onChange={handleInputChange}
             />
           </div>
-          <div className="mb-6">
+
+          {/* Môn học */}
+          <div className="flex items-center space-x-4">
             <label
               htmlFor="monHocId"
-              className="block text-gray-300 text-sm font-bold mb-2"
+              className="w-32 font-bold text-sm text-gray-300"
             >
               Môn Học
             </label>
             <select
               id="monHocId"
-              className="block w-full py-2 px-3 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 sm:text-sm text-white"
+              className="flex-1 py-2 px-3 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-green-500"
               value={editedTaiLieu.monHocId}
               onChange={handleInputChange}
               required
@@ -766,10 +775,12 @@ function TaiLieuEditModal({
               ))}
             </select>
           </div>
-          <div className="flex items-center justify-between">
+
+          {/* Buttons */}
+          <div className="flex items-center justify-between mt-2">
             <button
               type="submit"
-              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
+              className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-6 rounded-md transition-colors duration-200 flex items-center space-x-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -787,10 +798,11 @@ function TaiLieuEditModal({
               </svg>
               <span>Cập nhật</span>
             </button>
+
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
+              className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2.5 px-6 rounded-md transition-colors duration-200 flex items-center space-x-2"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -891,12 +903,12 @@ function TaiLieuViewerModal({ taiLieu, onClose }: TaiLieuViewerModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 p-7 rounded-lg shadow-xl w-full max-w-xl border border-yellow-500">
-        <h2 className="text-3xl font-bold mb-6 text-center text-yellow-400 flex items-center justify-center space-x-3">
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-gray-800 p-7 rounded-lg shadow-xl max-w-2xl border border-yellow-500 max-h-[85vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-6 text-center text-yellow-400 flex items-center justify-center space-x-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-7 w-7 text-yellow-400"
+            className="h-6 w-6 text-yellow-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -910,8 +922,9 @@ function TaiLieuViewerModal({ taiLieu, onClose }: TaiLieuViewerModalProps) {
           </svg>
           <span>Xem Tài liệu: {taiLieu.tenFile}</span>
         </h2>
+
         <div className="space-y-4 text-white text-base">
-          <div className="bg-gray-700 p-3 rounded-md h-96 overflow-y-auto">
+          <div className="bg-gray-700 p-3 rounded-md max-h-60 overflow-y-auto">
             <span className="font-semibold text-gray-300">
               Nội dung tài liệu (văn bản):
             </span>
@@ -920,10 +933,11 @@ function TaiLieuViewerModal({ taiLieu, onClose }: TaiLieuViewerModalProps) {
             </p>
           </div>
         </div>
-        <div className="flex justify-center mt-8 space-x-4">
+
+        <div className="flex justify-center mt-6 space-x-4">
           <button
             onClick={onClose}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-md focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center space-x-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

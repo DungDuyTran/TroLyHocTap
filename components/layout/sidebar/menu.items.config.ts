@@ -1,7 +1,10 @@
 import {
   CalendarDays,
+  ChartNoAxesCombined,
+  ClockFading,
   BarChart2,
   PieChart,
+  Star,
   BookOpen,
   FileText,
   StickyNote,
@@ -15,6 +18,7 @@ import {
   CalendarCheck2,
   TrendingUp,
   ClipboardList,
+  Clock,
 } from "lucide-react";
 
 type SidebarMenuItem = {
@@ -28,7 +32,7 @@ export const menuItems: SidebarMenuItem[] = [
   {
     title: "Lịch học",
     icon: CalendarDays,
-    href: "/components/calender",
+    href: "#",
     children: [
       {
         title: "Xem lịch học",
@@ -65,13 +69,18 @@ export const menuItems: SidebarMenuItem[] = [
     href: "/dashboard/thongke",
     children: [
       {
-        title: "Đồng hồ",
-        icon: ListOrdered,
+        title: "Đồng hồ đếm giờ",
+        icon: Clock,
         href: "/thongKe/dongHo",
       },
       {
+        title: "Đồng hồ đếm ngược",
+        icon: ClockFading,
+        href: "/thongKe/dongHoDemNguoc",
+      },
+      {
         title: "Thống kê",
-        icon: ListOrdered,
+        icon: ChartNoAxesCombined,
         href: "/thongKe/thongKe",
       },
     ],
@@ -105,7 +114,7 @@ export const menuItems: SidebarMenuItem[] = [
       },
       {
         title: "Quan trọng",
-        icon: FileText,
+        icon: Star,
         href: "/ghiChu/quanTrong",
       },
     ],

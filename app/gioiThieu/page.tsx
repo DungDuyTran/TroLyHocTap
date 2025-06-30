@@ -13,7 +13,7 @@ import {
   Cpu,
   Activity,
   Target,
-} from "lucide-react"; // Đã thay Robot bằng Cpu
+} from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -31,7 +31,7 @@ export default function LandingPage() {
           <h1 className="text-6xl font-extrabold leading-tight mb-6 text-green-400 drop-shadow-lg animate-fade-in-down">
             Nâng Tầm Học Tập Cùng AI
           </h1>
-          <p className="text-xl text-gray-300 mb-8 animate-fade-in-up">
+          <p className="text-2xl text-gray-300 mb-8 animate-fade-in-up">
             Giải phóng tiềm năng học tập của bạn với ứng dụng trợ lý thông minh,
             tích hợp trí tuệ nhân tạo để tối ưu hóa mọi phiên học và đạt được
             thành công vượt trội.
