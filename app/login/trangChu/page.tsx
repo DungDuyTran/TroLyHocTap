@@ -36,7 +36,7 @@ export default function LearningLandingPage() {
     >
       <div className="absolute inset-0 bg-black opacity-30"></div>
 
-      <div className="relative z-10 lg:w-1/2 p-8 flex flex-col justify-center items-center text-center bg-gray-800 bg-opacity-30 rounded-lg shadow-xl m-4 lg:m-8 backdrop-filter backdrop-blur-md">
+      <div className="relative z-10 lg:w-1/2 p-8 flex flex-col justify-center items-center text-center bg-[rgba(0,0,0,0.4)] rounded-lg shadow-xl m-4 lg:m-8 backdrop-filter backdrop-blur-md">
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 text-green-400 leading-tight drop-shadow-2xl">
           Nâng Tầm Học Tập Cùng AI
         </h1>
@@ -55,7 +55,7 @@ export default function LearningLandingPage() {
           </button>
           <a
             href="/login/trangWeb"
-            className="px-8 py-3 bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
+            className="px-8 py-3 bg-green-600 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center space-x-2"
           >
             <LogIn size={24} />
             <span>Đăng Nhập</span>
@@ -64,8 +64,8 @@ export default function LearningLandingPage() {
       </div>
 
       <div className="relative z-10 lg:w-1/2 p-8 flex flex-col justify-center items-center">
-        <div className="bg-gray-700 bg-opacity-30 p-8 rounded-lg shadow-xl w-full max-w-md border border-purple-600 backdrop-filter backdrop-blur-md">
-          <h2 className="text-3xl font-bold mb-6 text-center text-purple-300">
+        <div className="w-full max-w-md p-8 flex flex-col justify-center items-center bg-[rgba(0,0,0,0.4)] rounded-xl shadow-xl m-4 lg:m-8 backdrop-blur-md backdrop-saturate-150">
+          <h2 className="text-3xl font-bold mb-6 text-center text--300">
             {showLogin ? "Đăng Nhập" : "Đăng Ký"}
           </h2>
           {showLogin ? (
@@ -80,7 +80,7 @@ export default function LearningLandingPage() {
                 <input
                   type="email"
                   id="login-email"
-                  className="shadow appearance-none border border-gray-600 rounded-md w-full py-3 px-4 text-white bg-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="shadow appearance-none border border-gray-600 rounded-md w-full py-3 px-4 text-white bg-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -90,14 +90,14 @@ export default function LearningLandingPage() {
               <div>
                 <label
                   htmlFor="login-password"
-                  className="block text-gray-300 text-sm font-bold mb-2"
+                  className="block text-gray-300 text-sm font-bold mb-2 w-[400px]"
                 >
                   Mật khẩu
                 </label>
                 <input
                   type="password"
                   id="login-password"
-                  className="shadow appearance-none border border-gray-600 rounded-md w-full py-3 px-4 text-white bg-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="shadow appearance-none border border-gray-600 rounded-md w-full py-3 px-4 text-white bg-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="********"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -106,10 +106,10 @@ export default function LearningLandingPage() {
               </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-purple-600 rounded-md shadow-lg hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center justify-center space-x-2"
+                className="w-full py-3 bg-green-600 rounded-md shadow-lg hover:bg-green-700 transition-all duration-300 transform hover:scale-105 text-lg font-semibold flex items-center justify-center space-x-2"
               >
-                <LogIn size={24} />
-                <span>Đăng Nhập</span>
+                <LogIn size={26} />
+                <span className="">Đăng Nhập</span>
               </button>
             </form>
           ) : (

@@ -20,7 +20,7 @@ const CozeChatWidget = () => {
       if (window.CozeWebSDK?.WebChatClient) {
         new window.CozeWebSDK.WebChatClient({
           config: {
-            bot_id: "7516567095715708944",
+            bot_id: "7528249052929654792", // Đã cập nhật
           },
           componentProps: {
             title: "Trợ lý học tập Coze 💬",
@@ -28,9 +28,9 @@ const CozeChatWidget = () => {
           auth: {
             type: "token",
             token:
-              "pat_c4MJwwCC2FeI8rmIVoQ2qCLhwEjlo4SocXKIKknnPqkyh4Gdm5Fsh7WgvY0wk5zZ",
+              "pat_qIgoO3FWlKComxjlkinuMsm4UCL80m9blUM5lvmgSERAm2J0gan777I75zjuXmqE", // Đã cập nhật
             onRefreshToken: () =>
-              "pat_c4MJwwCC2FeI8rmIVoQ2qCLhwEjlo4SocXKIKknnPqkyh4Gdm5Fsh7WgvY0wk5zZ",
+              "pat_qIgoO3FWlKComxjlkinuMsm4UCL80m9blUM5lvmgSERAm2J0gan777I75zjuXmqE", // Đã cập nhật
           },
         });
       } else {

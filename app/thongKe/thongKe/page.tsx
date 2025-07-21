@@ -408,10 +408,6 @@ export default function LichHocTrackerApp() {
                 className="bg-gray-700 p-4 rounded-lg shadow-md flex justify-between items-center"
               >
                 <div>
-                  <p className="text-lg font-semibold text-white">
-                    <Book size={18} className="inline-block mr-2" />
-                    {record.subject || "Không có môn học"}
-                  </p>
                   <p className="text-sm text-gray-300">
                     <Calendar size={16} className="inline-block mr-1" />
                     {new Date(record.startTime).toLocaleString("vi-VN")} -{" "}

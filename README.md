@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 Trợ Lý Học Tập – Study Assistant
 
-## Getting Started
+Đồ án môn **Công nghệ phần mềm**, xây dựng bằng **Next.js + TypeScript**, hỗ trợ sinh viên quản lý lịch học, thời gian ôn tập, trao đổi với chatbot AI, và thống kê hiệu quả học tập.
 
-First, run the development server:
+---
+
+## 🚀 Tính Năng Chính
+
+- 📅 **Lịch học thông minh**
+
+  - Hiển thị lịch bằng `React Big Calendar`, tương tác drag & drop
+  - Thêm, sửa, xoá buổi học hoặc sự kiện cá nhân
+
+- ⏱️ **Công cụ hỗ trợ học tập**
+
+  - Đồng hồ đếm ngược (Pomodoro), đồng hồ đếm giờ học
+  - Theo dõi thời gian học theo ngày
+
+- 💬 **Tích hợp Chat AI**
+
+  - Chatbot AI từ **Coze** – hỗ trợ giải thích kiến thức, trả lời nhanh
+  - Tích hợp trực tiếp vào trang học
+
+- 📊 **Thống kê – trực quan**
+
+  - Vẽ biểu đồ học tập bằng `Recharts`
+  - Phân tích thời lượng học theo chủ đề, tuần/tháng
+
+- 🧩 **Quản lý dữ liệu học tập**
+  - CRUD các mục: môn học, chủ đề, lịch học, giờ học
+  - API đầy đủ: `GET`, `POST`, `PUT`, `DELETE`
+  - Phân trang, lọc, tìm kiếm nội dung dễ dàng
+
+---
+
+## 🛠 Công Nghệ Sử Dụng
+
+| Công Nghệ                 | Mục đích                          |
+| ------------------------- | --------------------------------- |
+| **Next.js 15**            | App Router + API routes           |
+| **TypeScript**            | Giúp code rõ ràng, tránh lỗi      |
+| **React 19**              | Giao diện linh hoạt               |
+| **Tailwind CSS 4**        | Thiết kế nhanh bằng class utility |
+| **Prisma ORM**            | Tương tác MySQL dễ dàng           |
+| **MySQL**                 | Cơ sở dữ liệu chính               |
+| **React Big Calendar**    | Hiển thị lịch học tương tác       |
+| **React Hook Form + Zod** | Quản lý và kiểm tra form          |
+| **Recharts**              | Vẽ biểu đồ học tập                |
+| **Axios + SWR**           | Gọi và cache API hiệu quả         |
+| **Coze SDK**              | Chatbot AI hỗ trợ học tập         |
+| `date-fns`, `clsx`...     | Hỗ trợ xử lý thời gian và UI      |
+
+---
+
+## ⚙️ Cách Chạy Project
 
 ```bash
+git clone https://github.com/DungDuyTran/TroLyHocTap
+cd TroLyHocTap
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

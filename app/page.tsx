@@ -6,5 +6,9 @@ import React from "react";
 import LearningLandingPage from "./login/trangChu/page";
 
 export default function HomePage() {
-  return <LearningLandingPage />;
+  return (
+    <div className="z-50">
+      <LearningLandingPage />
+    </div>
+  );
 }
