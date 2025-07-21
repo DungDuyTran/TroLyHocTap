@@ -1,6 +1,6 @@
 # 📚 Trợ Lý Học Tập – Study Assistant
 
-Đồ án môn **Công nghệ phần mềm**, xây dựng bằng **Next.js + TypeScript**, hỗ trợ sinh viên quản lý lịch học, thời gian ôn tập, trao đổi với chatbot AI, và thống kê hiệu quả học tập.
+Đồ án môn **Công nghệ phần mềm**, xây dựng bằng **Next.js + TypeScript**, hỗ trợ sinh viên quản lý lịch học, thời gian ôn tập, trao đổi với chatbot AI, và thống kê hiệu quả học tập...
 
 ---
 
