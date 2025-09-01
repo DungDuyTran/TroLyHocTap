@@ -113,36 +113,20 @@ body {
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
-
 @layer base {
-  /* ẨN TOÀN BỘ THANH CUỘN TRÊN MỌI TRÌNH DUYỆT */
-
-  /* Chrome, Edge, Safari */
+  /* Ẩn toàn bộ thanh cuộn trên mọi trình duyệt */
   ::-webkit-scrollbar {
-    display: none !important;
+    display: none !important; /* Chrome, Safari, Edge */
   }
 
-  /* Firefox */
   * {
-    scrollbar-width: none !important;
+    scrollbar-width: none !important; /* Firefox */
   }
 
-  /* Ngăn scroll luôn (nếu muốn) */
   html,
   body {
-    overflow: hidden !important;
-  }
-
-  html,
-  body,
-  * {
-    scrollbar-width: none; /* Firefox */
-  }
-
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  *::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
+    overflow-x: hidden; /* chỉ chặn ngang */
+    overflow-y: auto; /* vẫn cho phép cuộn dọc */
   }
 }
 

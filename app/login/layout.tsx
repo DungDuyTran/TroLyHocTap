@@ -13,7 +13,6 @@ export default function LoginLayout({
 }) {
   return (
     <div>
-      {" "}
       {children}
       <LandingPage />
       <CozeChatWidget />

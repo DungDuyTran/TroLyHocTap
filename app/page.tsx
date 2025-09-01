@@ -7,7 +7,7 @@ import LearningLandingPage from "./login/trangChu/page";
 
 export default function HomePage() {
   return (
-    <div className="z-50">
+    <div className="z-50 h-auto">
       <LearningLandingPage />
     </div>
   );
