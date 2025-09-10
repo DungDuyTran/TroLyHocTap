@@ -8,14 +8,14 @@ interface GhiChu {
   noiDung: string;
   ngayTao: string;
   userId: number;
-  isQuanTrong?: boolean; // Added isQuanTrong field
+  isQuanTrong?: boolean;
 }
 
 interface GhiChuFormData {
   noiDung: string;
   ngayTao: string;
   userId: number;
-  isQuanTrong?: boolean; // Added isQuanTrong field
+  isQuanTrong?: boolean;
 }
 
 // Main Component
@@ -154,7 +154,6 @@ export default function GhiChuPage() {
     }
   };
 
-  // Toggle importance status of a note
   const handleToggleQuanTrong = async (ghiChu: GhiChu) => {
     try {
       const updatedStatus = !ghiChu.isQuanTrong;
@@ -173,7 +172,6 @@ export default function GhiChuPage() {
           )}`
         );
       }
-      // Optimistically update the local state for immediate feedback
       setDanhSachGhiChu((prev) =>
         prev.map((item) =>
           item.id === ghiChu.id ? { ...item, isQuanTrong: updatedStatus } : item

@@ -46,23 +46,23 @@ export const menuItems: SidebarMenuItem[] = [
       },
     ],
   },
-  {
-    title: "Tiến độ học tập",
-    icon: BarChart2,
-    href: "/dashboard/tiendo",
-    children: [
-      {
-        title: "Xem tiến độ",
-        icon: TrendingUp,
-        href: "/app/monhoc/danhsach",
-      },
-      {
-        title: "Bảng điểm",
-        icon: ClipboardList,
-        href: "/dashboard/tiendo/bangdiem",
-      },
-    ],
-  },
+  // {
+  //   title: "Tiến độ học tập",
+  //   icon: BarChart2,
+  //   href: "/dashboard/tiendo",
+  //   children: [
+  //     {
+  //       title: "Xem tiến độ",
+  //       icon: TrendingUp,
+  //       href: "/app/monhoc/danhsach",
+  //     },
+  //     {
+  //       title: "Bảng điểm",
+  //       icon: ClipboardList,
+  //       href: "/dashboard/tiendo/bangdiem",
+  //     },
+  //   ],
+  // },
   {
     title: "Thống kê học tập",
     icon: PieChart,

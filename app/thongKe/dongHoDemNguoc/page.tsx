@@ -41,7 +41,7 @@ export default function CountdownTimerComponent({
           if (countdownIntervalRef.current)
             clearInterval(countdownIntervalRef.current);
           setCountdownTimerRunning(false);
-          showNotification("Hết giờ! Hoàn thành mục tiêu học tập!", "success");
+          showNotification("Hết giờ! Hoàn thành mục tiêu học tập! ", "success");
           return 0;
         }
         return prev - 1;

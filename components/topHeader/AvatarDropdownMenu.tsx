@@ -79,7 +79,7 @@ export default function AvatarDropdownMenu() {
               Trợ giúp hỗ trợ
             </a>
             <a
-              href="/dang-xuat"
+              href="/"
               className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-300"
               role="menuitem"
             >

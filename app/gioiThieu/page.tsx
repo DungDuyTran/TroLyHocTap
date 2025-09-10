@@ -199,8 +199,6 @@ export default function LandingPage() {
   );
 }
 
-/* ---------------- Reusable Components ---------------- */
-
 function FeatureCard({
   icon,
   title,

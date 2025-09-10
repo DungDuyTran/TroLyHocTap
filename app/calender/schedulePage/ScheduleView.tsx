@@ -1,5 +1,9 @@
 "use client";
 
+// chỉ hiển thị lịch học bằng thư viện FullCalendar
+// events: danh sách sự kiện (môn học, thời gian).
+// onEventClick: callback khi bấm vào sự kiện.
+
 import React from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";

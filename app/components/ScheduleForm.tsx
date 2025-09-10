@@ -1,5 +1,8 @@
 "use client";
 
+// orm nhập dữ liệu sự kiện (môn học, thời gian bắt đầu, kết thúc).
+// onAdd: callback khi submit form để truyền dữ liệu lên RegisterSchedulePage.
+
 import React, { useState } from "react";
 
 interface Props {

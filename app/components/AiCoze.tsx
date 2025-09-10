@@ -28,9 +28,9 @@ const CozeChatWidget = () => {
           auth: {
             type: "token",
             token:
-              "pat_qIgoO3FWlKComxjlkinuMsm4UCL80m9blUM5lvmgSERAm2J0gan777I75zjuXmqE", // Đã cập nhật
+              "pat_qIgoO3FWlKComxjlkinuMsm4UCL80m9blUM5lvmgSERAm2J0gan777I75zjuXmqE",
             onRefreshToken: () =>
-              "pat_qIgoO3FWlKComxjlkinuMsm4UCL80m9blUM5lvmgSERAm2J0gan777I75zjuXmqE", // Đã cập nhật
+              "pat_qIgoO3FWlKComxjlkinuMsm4UCL80m9blUM5lvmgSERAm2J0gan777I75zjuXmqE",
           },
         });
       } else {

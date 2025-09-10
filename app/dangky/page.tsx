@@ -52,13 +52,13 @@ export default function SignupPage() {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-white">
       <img
-        src="/dangky.jpg"
+        src="https://png.pngtree.com/thumb_back/fh260/background/20230705/pngtree-a-symbol-of-achievement-graduation-cap-resting-on-a-stack-of-image_3761897.jpg"
         alt="background"
         className="absolute inset-0 w-full h-full object-cover opacity-90"
       />
 
       <div className="relative z-10 flex items-center justify-center w-full h-full">
-        <div className="bg-[rgb(202,177,101)] bg-opacity-60 p-10 rounded-lg w-[400px] opacity-95">
+        <div className="bg-[rgb(202,177,101)] bg-opacity-60 p-10 rounded-lg w-[400px] opacity-85">
           <h1 className="text-4xl font-bold text-[rgb(255,255,255)] mb-8 text-center">
             Đăng ký
           </h1>

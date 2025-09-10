@@ -26,9 +26,9 @@ export default function DanhSachMonHocPage() {
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(
     null
-  ); // State for notification message
+  );
   const [isSuccessNotification, setIsSuccessNotification] =
-    useState<boolean>(true); // State for notification type (success/error)
+    useState<boolean>(true);
 
   const fetchMonHoc = async () => {
     try {
@@ -50,14 +50,12 @@ export default function DanhSachMonHocPage() {
   useEffect(() => {
     fetchMonHoc();
   }, []);
-
-  // Function to show notification
   const showNotification = (message: string, isSuccess: boolean) => {
     setNotificationMessage(message);
     setIsSuccessNotification(isSuccess);
     setTimeout(() => {
       setNotificationMessage(null);
-    }, 3000); // Hide after 3 seconds
+    }, 3000);
   };
 
   const handleAddMonHoc = async (newMonHocData: MonHocFormData) => {
@@ -156,7 +154,7 @@ export default function DanhSachMonHocPage() {
   return (
     <div className="min-h-screen p-6 bg-gradient-to-br from-gray-900 to-black text-white font-inter">
       <h1 className="text-4xl font-extrabold mb-8 text-center text-green-400 drop-shadow-lg">
-        📚 Danh sách môn học
+        Danh sách môn học
       </h1>
 
       <button

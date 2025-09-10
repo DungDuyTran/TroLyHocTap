@@ -1,5 +1,5 @@
 "use client";
-
+// trang thêm lịch học mới.
 import React, { useEffect, useState } from "react";
 import ScheduleForm from "../../components/ScheduleForm";
 import FullCalendar from "@fullcalendar/react";

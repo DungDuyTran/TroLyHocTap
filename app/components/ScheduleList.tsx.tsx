@@ -1,4 +1,5 @@
 "use client";
+// trang hiển thị lịch học lấy từ database (API).
 
 import React, { useEffect, useState } from "react";
 import ScheduleView from "../calender/schedulePage/ScheduleView";

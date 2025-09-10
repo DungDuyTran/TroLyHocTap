@@ -1,5 +1,8 @@
 "use client";
-
+// một trang quản lý lịch học cá nhân (client-side).
+// Lưu/truy xuất sự kiện vào localStorage (chỉ trên trình duyệt).
+// Cho phép sửa/xóa sự kiện qua popup khi click vào lịch.
+// demo cá nhân tạm thời
 import React, { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
